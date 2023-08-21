@@ -279,13 +279,7 @@ class MyApp extends StatelessWidget {
                       if (MediaQuery.of(context).size.width < 600) {
                         return const MobileHome();
                       } else {
-                        return 
-                        // FocusTraversalGroup(
-                        //     policy: CustomTraversalPolicy(),
-                        //     child: 
-                            const WebHome()
-                        //     )
-                         ;
+                        return const WebHome();
                       }
 
                       //mobile

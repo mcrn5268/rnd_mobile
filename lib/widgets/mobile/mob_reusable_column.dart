@@ -9,6 +9,7 @@ class MobileReusableColumn extends StatelessWidget {
   final String fourthRowFirstText;
   final String fourthRowSecondText;
   final Color? statusColor;
+  final bool? clickable;
   final bool? confCanc;
   final void Function()? onDenyPressed;
   final void Function()? onApprovePressed;
@@ -25,6 +26,7 @@ class MobileReusableColumn extends StatelessWidget {
     required this.fourthRowFirstText,
     required this.fourthRowSecondText,
     required this.statusColor,
+    this.clickable,
     this.confCanc,
     this.onDenyPressed,
     this.onApprovePressed,
@@ -73,7 +75,12 @@ class MobileReusableColumn extends StatelessWidget {
               textAlign: TextAlign.left,
             ),
             const Spacer(),
-            const SizedBox(width: 15, child: Icon(Icons.arrow_right_outlined)),
+            if (clickable == false) ...[
+              const SizedBox(width: 15),
+            ] else ...[
+              const SizedBox(
+                  width: 15, child: Icon(Icons.arrow_right_outlined)),
+            ]
           ],
         ),
         const SizedBox(height: 10),

@@ -20,7 +20,6 @@ class WebPurchReqHistScreen extends StatefulWidget {
 class _WebPurchReqHistScreenState extends State<WebPurchReqHistScreen> {
   late final UserProvider userProvider;
   late final PurchReqHistFilterProvider reqHistFilterProvider;
-  final GlobalKey _buttonKey = GlobalKey();
   bool confCanc = false;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;

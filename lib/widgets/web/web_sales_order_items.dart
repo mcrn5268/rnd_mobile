@@ -54,57 +54,65 @@ Widget webSalesOrderItems(
                 ),
               ],
             ),
-            child: InkWell(
-              onTap: () {
-                if (clickable) {
-                  Navigator.pop(context, salesOrderItem);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 15, right: 5),
-                child: Row(
-                  children: [
-                    //Item
-                    WebReusableRow(
-                      flex: 1,
-                      text: salesOrderItem[1].toString().trim(),
-                    ),
-                    //Description
-                    WebReusableRow(
-                      flex: 2,
-                      text: salesOrderItem[2].toString().trim(),
-                    ),
-                    //Group
-                    WebReusableRow(
-                      flex: 2,
-                      text: salesOrderItem[3].toString().trim(),
-                    ),
-                    //Stock
-                    WebReusableRow(
-                      flex: 1,
-                      text: salesOrderItem[4].toString().trim(),
-                    ),
-                    //Unit
-                    WebReusableRow(
-                      flex: 1,
-                      text: salesOrderItem[5].toString().trim(),
-                    ),
-                    //Cost Method
-                    WebReusableRow(
-                      flex: 1,
-                      text: salesOrderItem[6].toString().trim(),
-                    ),
-                    //Selling Price
-                    WebReusableRow(
-                      flex: 1,
-                      text: salesOrderItem[7].toString().trim(),
-                    ),
-
-                    const SizedBox(
-                      width: 10,
-                      child: Icon(Icons.arrow_right_outlined),
-                    ),
-                  ],
+            child: MouseRegion(
+              cursor: clickable ? SystemMouseCursors.click : MouseCursor.defer,
+              child: GestureDetector(
+                onTap: clickable
+                    ? () {
+                        Navigator.pop(context, salesOrderItem);
+                      }
+                    : null,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 15, right: 5),
+                  child: Row(
+                    children: [
+                      //Item
+                      WebReusableRow(
+                        flex: 1,
+                        text: salesOrderItem[1].toString().trim(),
+                      ),
+                      //Description
+                      WebReusableRow(
+                        flex: 2,
+                        text: salesOrderItem[2].toString().trim(),
+                      ),
+                      //Group
+                      WebReusableRow(
+                        flex: 2,
+                        text: salesOrderItem[3].toString().trim(),
+                      ),
+                      //Stock
+                      WebReusableRow(
+                        flex: 1,
+                        text: salesOrderItem[4].toString().trim(),
+                      ),
+                      //Unit
+                      WebReusableRow(
+                        flex: 1,
+                        text: salesOrderItem[5].toString().trim(),
+                      ),
+                      //Cost Method
+                      WebReusableRow(
+                        flex: 1,
+                        text: salesOrderItem[6].toString().trim(),
+                      ),
+                      //Selling Price
+                      WebReusableRow(
+                        flex: 1,
+                        text: salesOrderItem[7].toString().trim(),
+                      ),
+                      if (clickable) ...[
+                        const SizedBox(
+                          width: 10,
+                          child: Icon(Icons.arrow_right_outlined),
+                        ),
+                      ] else ...[
+                        const SizedBox(
+                          width: 10,
+                        ),
+                      ]
+                    ],
+                  ),
                 ),
               ),
             ),

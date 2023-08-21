@@ -213,8 +213,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                               responseData['result']
                                                   ['SessionID'];
                                           if (sessionId != null) {
-                                            final message =
-                                                'Success! (Session ID: $sessionId)';
+                                            const message =
+                                                'Success!';
                                             if (kIsWeb || Platform.isAndroid) {
                                               showToast(message);
                                             } else {

@@ -67,6 +67,7 @@ dependencies:
       path: plugins/window_size
   toastification: ^0.0.3
   collection: ^1.15.0
+  table_calendar: ^3.0.9
 
 
 dev_dependencies:

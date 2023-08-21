@@ -39,49 +39,56 @@ Widget mobileSalesOrderItems(
                   ),
                 ],
               ),
-              child: InkWell(
-                onTap: () {
-                  if (clickable) {
-                    Navigator.pop(context, salesOrderItem);
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 3),
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: MediaQuery.of(context).platformBrightness ==
-                                Brightness.dark
-                            ? Colors.grey[900]
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey)),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 10),
-                      child: MobileReusableColumn(
-                        //Item Code
-                        firstRowFirstText: salesOrderItem[1].toString(),
-                        //Item Stock Status
-                        firstRowSecondText: salesOrderItem[4] == 'Y'
-                            ? 'In Stock'
-                            : salesOrderItem[4] == 'N'
-                                ? 'Out of Stock'
-                                : '---',
-                        //Description
-                        secondRowFirstText: salesOrderItem[2].toString().trim(),
-                        //Group
-                        thirdRowFirstText: salesOrderItem[3].toString().trim(),
-                        //Cost Method
-                        thirdRowSecondText: salesOrderItem[5].toString().trim(),
-                        //Unit
-                        fourthRowFirstText: salesOrderItem[6],
-                        //Selling Price
-                        fourthRowSecondText: salesOrderItem[7].toString(),
-                        statusColor: salesOrderItem[4] == 'Y'
-                            ? Colors.green
-                            : salesOrderItem[4] == 'N'
-                                ? Colors.red
-                                : Colors.grey,
+              child: MouseRegion(
+                cursor:
+                    clickable ? SystemMouseCursors.click : MouseCursor.defer,
+                child: GestureDetector(
+                  onTap: clickable
+                      ? () {
+                          Navigator.pop(context, salesOrderItem);
+                        }
+                      : null,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 3),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: MediaQuery.of(context).platformBrightness ==
+                                  Brightness.dark
+                              ? Colors.grey[900]
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 10),
+                        child: MobileReusableColumn(
+                            //Item Code
+                            firstRowFirstText: salesOrderItem[1].toString(),
+                            //Item Stock Status
+                            firstRowSecondText: salesOrderItem[4] == 'Y'
+                                ? 'In Stock'
+                                : salesOrderItem[4] == 'N'
+                                    ? 'Out of Stock'
+                                    : '---',
+                            //Description
+                            secondRowFirstText:
+                                salesOrderItem[2].toString().trim(),
+                            //Group
+                            thirdRowFirstText:
+                                salesOrderItem[3].toString().trim(),
+                            //Cost Method
+                            thirdRowSecondText:
+                                salesOrderItem[5].toString().trim(),
+                            //Unit
+                            fourthRowFirstText: salesOrderItem[6],
+                            //Selling Price
+                            fourthRowSecondText: salesOrderItem[7].toString(),
+                            statusColor: salesOrderItem[4] == 'Y'
+                                ? Colors.green
+                                : salesOrderItem[4] == 'N'
+                                    ? Colors.red
+                                    : Colors.grey,
+                            clickable: clickable),
                       ),
                     ),
                   ),

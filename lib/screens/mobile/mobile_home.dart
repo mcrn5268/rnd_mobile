@@ -28,6 +28,7 @@ import 'package:rnd_mobile/utilities/shared_pref.dart';
 import 'package:rnd_mobile/widgets/greetings.dart';
 import 'package:rnd_mobile/widgets/show_dialog.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
+import 'package:universal_io/io.dart';
 
 //ONLY ENABLE THIS PACKAGE FOR WEB
 import 'dart:js' as js;
@@ -36,7 +37,6 @@ import 'dart:async';
 
 //ONLY ENABLE THIS PACKAGE FOR MOBILE
 // import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:universal_io/io.dart';
 
 class MobileHome extends StatefulWidget {
   const MobileHome({super.key});
@@ -60,6 +60,7 @@ class _MobileHomeState extends State<MobileHome>
   late ValueNotifier<int> indexNotifier;
   late ValueNotifier<String> titleNotifier;
   final player = AudioCache();
+  late Brightness brightness;
 
   //ONLY FOR WEB
   StreamSubscription<DocumentSnapshot>? _subscription;
@@ -77,6 +78,7 @@ class _MobileHomeState extends State<MobileHome>
         Provider.of<ItemsProvider>(context, listen: false);
     refreshIconIndicatorProvider =
         Provider.of<RefreshIconIndicatorProvider>(context, listen: false);
+    brightness = PlatformDispatcher.instance.platformBrightness;
     if (purchReqProvider.purchaseRequestList.isEmpty ||
         purchOrderProvider.purchaseOrderList.isEmpty ||
         salesOrderProvider.salesOrderList.isEmpty ||
@@ -99,41 +101,41 @@ class _MobileHomeState extends State<MobileHome>
       webNotifStream();
     } else {
       //when user taps notif
-    //   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    //     setState(() {
-    //       futures = [
-    //         _getPurchReqData(button: true),
-    //         _getPurchOrderData(button: true),
-    //         _getSalesOrderData(button: true),
-    //         _getSalesOrderItemsData(button: true),
-    //       ];
-    //     });
-    //     if (message.data['type'] == 'PR') {
-    //       String requestNumber = message.data['preqNum'];
-    //       purchReqProvider.setReqNumber(
-    //           reqNumber: int.parse(requestNumber), notify: true);
-    //       indexNotifier = ValueNotifier(0);
-    //     }
-    //     if (message.data['type'] == 'PO') {
-    //       String orderNumber = message.data['poNum'];
-    //       purchOrderProvider.setOrderNumber(
-    //           orderNumber: int.parse(orderNumber), notify: true);
-    //       indexNotifier = ValueNotifier(1);
-    //     }
-    //   });
+      //   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      //     setState(() {
+      //       futures = [
+      //         _getPurchReqData(button: true),
+      //         _getPurchOrderData(button: true),
+      //         _getSalesOrderData(button: true),
+      //         _getSalesOrderItemsData(button: true),
+      //       ];
+      //     });
+      //     if (message.data['type'] == 'PR') {
+      //       String requestNumber = message.data['preqNum'];
+      //       purchReqProvider.setReqNumber(
+      //           reqNumber: int.parse(requestNumber), notify: true);
+      //       indexNotifier = ValueNotifier(0);
+      //     }
+      //     if (message.data['type'] == 'PO') {
+      //       String orderNumber = message.data['poNum'];
+      //       purchOrderProvider.setOrderNumber(
+      //           orderNumber: int.parse(orderNumber), notify: true);
+      //       indexNotifier = ValueNotifier(1);
+      //     }
+      //   });
 
-    //   //foreground
-    //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    //     player.play('audio/notif_sound2.mp3');
-    //     showToast(
-    //         message.data['type'] == 'PR'
-    //             ? 'New Purchase Request!'
-    //             : 'New Purchase Order!',
-    //         gravity: ToastGravity.TOP);
-    //     //just for the refresh icon to show red indicator
-    //     refreshIconIndicatorProvider.setShow(show: true);
-    //   });
-     }
+      //   //foreground
+      //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      //     player.play('audio/notif_sound2.mp3');
+      //     showToast(
+      //         message.data['type'] == 'PR'
+      //             ? 'New Purchase Request!'
+      //             : 'New Purchase Order!',
+      //         gravity: ToastGravity.TOP);
+      //     //just for the refresh icon to show red indicator
+      //     refreshIconIndicatorProvider.setShow(show: true);
+      //   });
+    }
   }
 
   @override
@@ -360,18 +362,14 @@ class _MobileHomeState extends State<MobileHome>
                             leading: Icon(Icons.playlist_add_check,
                                 color: value == 0
                                     ? Colors.white
-                                    : MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
+                                    : brightness == Brightness.dark
                                         ? Colors.grey
                                         : Colors.black),
                             title: Text('Purchase Request',
                                 style: TextStyle(
                                     color: value == 0
                                         ? Colors.white
-                                        : MediaQuery.of(context)
-                                                    .platformBrightness ==
-                                                Brightness.dark
+                                        : brightness == Brightness.dark
                                             ? Colors.grey
                                             : Colors.black)),
                             trailing: SizedBox(
@@ -439,18 +437,14 @@ class _MobileHomeState extends State<MobileHome>
                             leading: Icon(Icons.playlist_add_check,
                                 color: value == 1
                                     ? Colors.white
-                                    : MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
+                                    : brightness == Brightness.dark
                                         ? Colors.grey
                                         : Colors.black),
                             title: Text('Purchase Order',
                                 style: TextStyle(
                                     color: value == 1
                                         ? Colors.white
-                                        : MediaQuery.of(context)
-                                                    .platformBrightness ==
-                                                Brightness.dark
+                                        : brightness == Brightness.dark
                                             ? Colors.grey
                                             : Colors.black)),
                             trailing: SizedBox(
@@ -517,18 +511,14 @@ class _MobileHomeState extends State<MobileHome>
                             leading: Icon(Icons.playlist_add,
                                 color: value == 2
                                     ? Colors.white
-                                    : MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
+                                    : brightness == Brightness.dark
                                         ? Colors.grey
                                         : Colors.black),
                             title: Text('Sales Order',
                                 style: TextStyle(
                                     color: value == 2
                                         ? Colors.white
-                                        : MediaQuery.of(context)
-                                                    .platformBrightness ==
-                                                Brightness.dark
+                                        : brightness == Brightness.dark
                                             ? Colors.grey
                                             : Colors.black)),
                             // trailing: SizedBox(
@@ -595,18 +585,14 @@ class _MobileHomeState extends State<MobileHome>
                             leading: Icon(Icons.list,
                                 color: value == 3
                                     ? Colors.white
-                                    : MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
+                                    : brightness == Brightness.dark
                                         ? Colors.grey
                                         : Colors.black),
                             title: Text('Items',
                                 style: TextStyle(
                                     color: value == 3
                                         ? Colors.white
-                                        : MediaQuery.of(context)
-                                                    .platformBrightness ==
-                                                Brightness.dark
+                                        : brightness == Brightness.dark
                                             ? Colors.grey
                                             : Colors.black)),
                             selected: value == 3,
@@ -631,18 +617,15 @@ class _MobileHomeState extends State<MobileHome>
                     ListTile(
                       leading: Icon(
                         Icons.person,
-                        color: MediaQuery.of(context).platformBrightness ==
-                                Brightness.dark
+                        color: brightness == Brightness.dark
                             ? Colors.grey
                             : Colors.black,
                       ),
                       title: Text(userProvider.user!.username,
                           style: TextStyle(
-                              color:
-                                  MediaQuery.of(context).platformBrightness ==
-                                          Brightness.dark
-                                      ? Colors.grey
-                                      : Colors.black)),
+                              color: brightness == Brightness.dark
+                                  ? Colors.grey
+                                  : Colors.black)),
                       trailing: ElevatedButton(
                         onPressed: () async {
                           final response = await dialogBuilder(
