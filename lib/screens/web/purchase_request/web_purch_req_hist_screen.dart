@@ -260,6 +260,10 @@ class _WebPurchReqHistScreenState extends State<WebPurchReqHistScreen> {
                             offset: const Offset(0, 1),
                           ),
                         ],
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.only(left: 3),
@@ -909,7 +913,8 @@ class _WebPurchReqHistScreenState extends State<WebPurchReqHistScreen> {
                                 child: Container(
                                   height: 40,
                                   decoration: const BoxDecoration(
-                                      color: Color(0xFF795FCD),
+                                      // color: Color(0xFF795FCD),
+                                      color: Colors.blueGrey,
                                       border: Border.symmetric(
                                           horizontal:
                                               BorderSide(color: Colors.white))),

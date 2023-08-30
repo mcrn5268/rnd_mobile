@@ -56,7 +56,7 @@ Widget webSalesOrderItems(
             ),
             child: MouseRegion(
               cursor: clickable ? SystemMouseCursors.click : MouseCursor.defer,
-              child: GestureDetector(
+              child: InkWell(
                 onTap: clickable
                     ? () {
                         Navigator.pop(context, salesOrderItem);

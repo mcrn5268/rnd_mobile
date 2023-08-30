@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rnd_mobile/models/purchase_order_model.dart';
+import 'package:rnd_mobile/models/purchase_req_model.dart';
+import 'package:rnd_mobile/providers/purchase_order/purchase_order_provider.dart';
+import 'package:rnd_mobile/providers/purchase_request/purchase_req_provider.dart';
 
 bool first = true;
 
@@ -35,7 +40,8 @@ class _WebCustomAppBarState extends State<WebCustomAppBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFF795FCD),
+      // backgroundColor: const Color(0xFF795FCD),
+      backgroundColor: Colors.blueGrey,
       flexibleSpace: Stack(
         children: [
           Positioned(
@@ -70,36 +76,85 @@ class _WebCustomAppBarState extends State<WebCustomAppBar> {
                   (index) {
                     final isSelected =
                         index == (first ? widget.selectedIndex : selectedIndex);
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                        first = false;
-                        widget.onMenuItemSelected(index);
-                      },
-                      child: Container(
-                        decoration: isSelected
-                            ? BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                    if (index == 4) {
+                      return Container();
+                    } else {
+                      return Consumer2<PurchReqProvider, PurchOrderProvider>(
+                        builder: (context, purchReqProvider, purchOrderProvider,
+                            child) {
+                          return Stack(
+                            children: [
+                              InkWell(
                                 borderRadius: BorderRadius.circular(16),
-                              )
-                            : null,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          widget.menuItems[index],
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isSelected ? Colors.white : Colors.white70,
-                          ),
-                        ),
-                      ),
-                    );
+                                onTap: () {
+                                  setState(() {
+                                    selectedIndex = index;
+                                  });
+                                  first = false;
+                                  widget.onMenuItemSelected(index);
+                                },
+                                child: Container(
+                                  decoration: isSelected
+                                      ? BoxDecoration(
+                                          color: Colors.white.withOpacity(0.15),
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                        )
+                                      : null,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Text(
+                                    widget.menuItems[index],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.white70,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (index == 0) ...[
+                                Visibility(
+                                  visible:
+                                      purchReqProvider.purchReqPending != 0,
+                                  child: Positioned(
+                                    right: 10,
+                                    child: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.red),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (index == 1) ...[
+                                Visibility(
+                                  visible:
+                                      purchOrderProvider.purchOrderPending != 0,
+                                  child: Positioned(
+                                    right: 10,
+                                    child: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.red),
+                                    ),
+                                  ),
+                                ),
+                              ]
+                            ],
+                          );
+                        },
+                      );
+                    }
                   },
                 ),
               ),

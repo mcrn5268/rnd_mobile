@@ -9,6 +9,9 @@ class PurchOrderProvider extends ChangeNotifier {
   List<PurchaseOrder> get purchaseOrderList => _purchaseOrderList;
   int get orderNumber => _orderNumber;
   String? get search => _search;
+  int get purchOrderPending => _purchaseOrderList
+      .where((purchOrder) => !purchOrder.isFinal && !purchOrder.isCancelled)
+      .length;
 
   void setOrderNumber({required int orderNumber, bool notify = false}) {
     _orderNumber = orderNumber;

@@ -14,6 +14,7 @@ import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_purch_order_dialog.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_reusable_column.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
+import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 
 enum ApprovalStatus {
   approve,
@@ -437,23 +438,27 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                                                                       .sessionId,
                                                               poId: order.id);
                                                 }
+                                                bool messageIsError = false;
                                                 String message;
                                                 if (response.statusCode ==
                                                     200) {
                                                   message = status ==
                                                           ApprovalStatus.approve
-                                                      ? 'Approved'
-                                                      : 'Denied';
+                                                      ? 'PO #${order.poNumber} Approved'
+                                                      : 'PO #${order.poNumber} Denied';
                                                 } else if (response
                                                         .statusCode ==
                                                     401) {
+                                                  messageIsError = true;
                                                   message =
                                                       'Session Expired. Please Login Again.';
                                                 } else {
+                                                  messageIsError = true;
                                                   message =
-                                                      'Error! Something Went Wrong!';
+                                                      'Error! Something Went Wrong!\n${response.body}';
                                                 }
-                                                showToast(message);
+                                                showToastMessage(message,
+                                                    errorToast: messageIsError);
 
                                                 if (response.statusCode ==
                                                     401) {
@@ -792,7 +797,8 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                             child: Container(
                               height: 40,
                               decoration: const BoxDecoration(
-                                  color: Color(0xFF795FCD),
+                                  // color: Color(0xFF795FCD),
+                                  color: Colors.blueGrey,
                                   border: Border.symmetric(
                                       horizontal:
                                           BorderSide(color: Colors.white))),

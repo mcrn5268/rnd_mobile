@@ -16,7 +16,8 @@ class WebPurchReqLineScreen extends StatelessWidget {
     var neededDate = DateFormat.yMMMd().format(request.neededDate);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF795FCD),
+        // backgroundColor: const Color(0xFF795FCD),
+        backgroundColor: Colors.blueGrey,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_outlined),
           onPressed: () {

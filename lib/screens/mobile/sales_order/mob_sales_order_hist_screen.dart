@@ -28,7 +28,7 @@ class _MobileSalesOrderHistScreenState
   bool hasMore = true;
   OrderDataType _orderDataType = OrderDataType.soDate;
   OrderStatus _orderStatus = OrderStatus.all;
-  OrderSort _orderSort = OrderSort.asc;
+  OrderSort _orderSort = OrderSort.dsc;
 
   final TextEditingController _orderFromController = TextEditingController();
   final TextEditingController _orderToController = TextEditingController();
@@ -82,11 +82,11 @@ class _MobileSalesOrderHistScreenState
       switch (dataType) {
         case OrderDataType.soDate:
           if (startDate != null || endDate != null) {
-            salesOrders.retainWhere((request) {
-              if (startDate != null && request.soDate.isBefore(startDate)) {
+            salesOrders.retainWhere((order) {
+              if (startDate != null && order.soDate.isBefore(startDate)) {
                 return false;
               }
-              if (endDate != null && request.soDate.isAfter(endDate)) {
+              if (endDate != null && order.soDate.isAfter(endDate)) {
                 return false;
               }
               return true;
@@ -103,12 +103,11 @@ class _MobileSalesOrderHistScreenState
           break;
         case OrderDataType.delvDate:
           if (startDate != null || endDate != null) {
-            salesOrders.retainWhere((request) {
-              if (startDate != null &&
-                  request.deliveryDate.isBefore(startDate)) {
+            salesOrders.retainWhere((order) {
+              if (startDate != null && order.deliveryDate.isBefore(startDate)) {
                 return false;
               }
-              if (endDate != null && request.deliveryDate.isAfter(endDate)) {
+              if (endDate != null && order.deliveryDate.isAfter(endDate)) {
                 return false;
               }
               return true;
@@ -146,35 +145,18 @@ class _MobileSalesOrderHistScreenState
 
   void _loadMore() async {
     late List<SalesOrder> newSalesOrders;
-    if (Provider.of<SalesOrderHistFilterProvider>(context, listen: false)
-            .status ==
-        OrderStatus.pending) {
-      final data = await SalesOrderService.getSalesOrderView(
-        sessionId: userProvider.user!.sessionId,
-        recordOffset: _loadedItemsCount,
-        forPending: true,
-      );
-      if (mounted) {
-        bool purchOrderFlag = handleSessionExpiredException(data, context);
+    final data = await SalesOrderService.getSalesOrderView(
+      sessionId: userProvider.user!.sessionId,
+      recordOffset: _loadedItemsCount,
+      forPending: true,
+      forAll: true,
+    );
+    if (mounted) {
+      bool salesOrderFlag = handleSessionExpiredException(data, context);
 
-        if (!purchOrderFlag) {
-          newSalesOrders = data['purchaseOrders'];
-          hasMore = data['hasMore'];
-        }
-      }
-    } else {
-      final data = await SalesOrderService.getSalesOrderView(
-        sessionId: userProvider.user!.sessionId,
-        recordOffset: _loadedItemsCount,
-        forAll: true,
-      );
-      if (mounted) {
-        bool purchOrderFlag = handleSessionExpiredException(data, context);
-
-        if (!purchOrderFlag) {
-          newSalesOrders = data['purchaseOrders'];
-          hasMore = data['hasMore'];
-        }
+      if (!salesOrderFlag) {
+        newSalesOrders = data['salesOrders'];
+        hasMore = data['hasMore'];
       }
     }
     setState(() {
@@ -230,34 +212,33 @@ class _MobileSalesOrderHistScreenState
           ),
           Expanded(child: Consumer<SalesOrderProvider>(
               builder: (context, salesOrdersProvider, _) {
-            List<SalesOrder> purchaseListPending =
+            List<SalesOrder> salesListPending =
                 salesOrdersProvider.salesOrderList;
             String? searchValue = salesOrdersProvider.search;
             if (searchValue != null && searchValue != '') {
-              purchaseListPending =
-                  purchaseListPending.where((purchaseRequest) {
-                return purchaseRequest.containsQuery(searchValue);
+              salesListPending = salesListPending.where((salesOrder) {
+                return salesOrder.containsQuery(searchValue);
               }).toList();
             }
-            if (purchaseListPending.isNotEmpty) {
+            if (salesListPending.isNotEmpty) {
               return Consumer<SalesOrderHistFilterProvider>(
                   builder: (context, filterProvider, _) {
                 List<SalesOrder> salesOrders = [];
-                if (purchaseListPending.isNotEmpty) {
+                if (salesListPending.isNotEmpty) {
                   if (filterProvider.status == OrderStatus.approved) {
-                    salesOrders = purchaseListPending.where((item) {
+                    salesOrders = salesListPending.where((item) {
                       return item.isFinal == true;
                     }).toList();
                   } else if (filterProvider.status == OrderStatus.denied) {
-                    salesOrders = purchaseListPending.where((item) {
+                    salesOrders = salesListPending.where((item) {
                       return item.isCancelled == true;
                     }).toList();
                   } else if (filterProvider.status == OrderStatus.pending) {
-                    salesOrders = purchaseListPending.where((item) {
+                    salesOrders = salesListPending.where((item) {
                       return item.isCancelled == false && item.isFinal == false;
                     }).toList();
                   } else {
-                    salesOrders = purchaseListPending;
+                    salesOrders = salesListPending;
                   }
                   sortSalesOrders(salesOrders, filterProvider.dataType!,
                       filterProvider.sort!,
@@ -412,8 +393,8 @@ class _MobileSalesOrderHistScreenState
               return Center(
                   child: Text(
                       searchValue != null && searchValue != ''
-                          ? 'No Matching Purchase Order Found'
-                          : '0 Purchase Orders',
+                          ? 'No Matching sales Order Found'
+                          : '0 sales Orders',
                       style: const TextStyle(fontSize: 30)));
             }
           })),
@@ -769,7 +750,8 @@ class _MobileSalesOrderHistScreenState
                             child: Container(
                               height: 40,
                               decoration: const BoxDecoration(
-                                  color: Color(0xFF795FCD),
+                                  // color: Color(0xFF795FCD),
+                                  color: Colors.blueGrey,
                                   border: Border.symmetric(
                                       horizontal:
                                           BorderSide(color: Colors.white))),

@@ -216,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             const message =
                                                 'Success!';
                                             if (kIsWeb || Platform.isAndroid) {
-                                              showToast(message);
+                                              showToastMessage(message);
                                             } else {
                                               if (mounted) {
                                                 CustomToast.show(
@@ -230,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 sessionId: sessionId);
                                           } else {
                                             if (kIsWeb) {
-                                              showToast('Session ID is null');
+                                              showToastMessage('Session ID is null');
                                             } else {
                                               if (mounted) {
                                                 CustomToast.show(
@@ -253,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           final errorMsg =
                                               responseData['error']['msg'];
                                           if (kIsWeb) {
-                                            showToast('Error: $errorMsg');
+                                            showToastMessage('Error: $errorMsg');
                                           } else {
                                             if (mounted) {
                                               CustomToast.show(
@@ -263,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           }
                                         } else {
                                           if (kIsWeb) {
-                                            showToast(
+                                            showToastMessage(
                                                 'Unexpected response format');
                                           } else {
                                             if (mounted) {

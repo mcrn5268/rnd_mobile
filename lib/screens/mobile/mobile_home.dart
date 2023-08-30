@@ -28,6 +28,7 @@ import 'package:rnd_mobile/utilities/shared_pref.dart';
 import 'package:rnd_mobile/widgets/greetings.dart';
 import 'package:rnd_mobile/widgets/show_dialog.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
+import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:universal_io/io.dart';
 
 //ONLY ENABLE THIS PACKAGE FOR WEB
@@ -98,7 +99,7 @@ class _MobileHomeState extends State<MobileHome>
       titleNotifier = ValueNotifier('');
     }
     if (kIsWeb) {
-      webNotifStream();
+      // webNotifStream();
     } else {
       //when user taps notif
       //   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -127,11 +128,11 @@ class _MobileHomeState extends State<MobileHome>
       //   //foreground
       //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       //     player.play('audio/notif_sound2.mp3');
-      //     showToast(
-      //         message.data['type'] == 'PR'
-      //             ? 'New Purchase Request!'
-      //             : 'New Purchase Order!',
-      //         gravity: ToastGravity.TOP);
+      //     showToastMessage(
+      //       message.data['type'] == 'PR'
+      //           ? 'New Purchase Request!'
+      //           : 'New Purchase Order!',
+      //     );
       //     //just for the refresh icon to show red indicator
       //     refreshIconIndicatorProvider.setShow(show: true);
       //   });
@@ -165,7 +166,7 @@ class _MobileHomeState extends State<MobileHome>
 
   Future<void> webNotification({required Map<String, dynamic> data}) async {
     final notification = js.JsObject(js.context['Notification'], [
-      '***New Purchase ${data['type'] == "PR" ? "Request" : "Order"}!***',
+      'New Purchase ${data['type'] == "PR" ? "Request" : "Order"}!',
       js.JsObject.jsify({
         'body': data['type'] == "PR"
             ? "Request Number: ${data["preqNum"]}"
@@ -184,14 +185,13 @@ class _MobileHomeState extends State<MobileHome>
         ];
 
         if (data['type'] == 'PR') {
-          Provider.of<PurchReqProvider>(context, listen: false).setReqNumber(
+          purchReqProvider.setReqNumber(
               reqNumber: int.parse(data["preqNum"]), notify: true);
           indexNotifier.value = 0;
           indexNotifier = ValueNotifier(0);
         } else if (data['type'] == 'PO') {
-          Provider.of<PurchOrderProvider>(context, listen: false)
-              .setOrderNumber(
-                  orderNumber: int.parse(data["poNum"]), notify: true);
+          purchOrderProvider.setOrderNumber(
+              orderNumber: int.parse(data["poNum"]), notify: true);
           indexNotifier.value = 1;
           indexNotifier = ValueNotifier(1);
         }
@@ -266,68 +266,101 @@ class _MobileHomeState extends State<MobileHome>
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: AppBar(
-          actions: [
-            Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    onPressed: () {
-                      showToast('Refreshing data...');
+            actions: [
+              Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      onPressed: () {
+                        showToastMessage('Refreshing data...');
 
-                      Provider.of<RefreshIconIndicatorProvider>(context,
-                              listen: false)
-                          .setShow(show: false);
-                      setState(() {
-                        refresh = true;
-                        //GET new data
-                        //it will refresh all the pages
-                        //because pages uses FutureBuilder = futures variable
-                        futures = [
-                          _getPurchReqData(button: true),
-                          _getPurchOrderData(button: true),
-                          _getSalesOrderData(button: true),
-                          _getSalesOrderItemsData(button: true),
-                        ];
-                      });
-                    },
+                        Provider.of<RefreshIconIndicatorProvider>(context,
+                                listen: false)
+                            .setShow(show: false);
+                        setState(() {
+                          refresh = true;
+                          //GET new data
+                          //it will refresh all the pages
+                          //because pages uses FutureBuilder = futures variable
+                          futures = [
+                            _getPurchReqData(button: true),
+                            _getPurchOrderData(button: true),
+                            _getSalesOrderData(button: true),
+                            _getSalesOrderItemsData(button: true),
+                          ];
+                        });
+                      },
+                    ),
                   ),
-                ),
-                Positioned(
-                    right: 3,
-                    top: 4,
-                    child: Consumer<RefreshIconIndicatorProvider>(builder:
-                        (context, refreshIconIndicatorProvider, child) {
-                      return Visibility(
-                          visible: refreshIconIndicatorProvider.show,
+                  Positioned(
+                      right: 3,
+                      top: 4,
+                      child: Consumer<RefreshIconIndicatorProvider>(builder:
+                          (context, refreshIconIndicatorProvider, child) {
+                        return Visibility(
+                            visible: refreshIconIndicatorProvider.show,
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                  shape: BoxShape.circle, color: Colors.red),
+                            ));
+                      }))
+                ],
+              ),
+            ],
+            // backgroundColor: Colors.deepPurple,
+            backgroundColor: Colors.blueGrey,
+            shadowColor: Colors.transparent,
+            elevation: 0.0,
+            centerTitle: true,
+            title: ValueListenableBuilder<String>(
+                valueListenable: titleNotifier,
+                builder: (context, value, _) {
+                  return Text(value);
+                }),
+            // flexibleSpace: Container(
+            //   decoration: const BoxDecoration(
+            //     gradient: LinearGradient(
+            //       begin: Alignment.topCenter,
+            //       end: Alignment.bottomCenter,
+            //       colors: [Colors.blueGrey, Colors.blueGrey],
+            //       // colors: [Colors.deepPurple, Colors.deepPurple],
+            //     ),
+            //   ),
+            // ),
+            flexibleSpace: Consumer2<PurchReqProvider, PurchOrderProvider>(
+                builder:
+                    (context, purchReqProvider, purchOrderProvider, child) {
+              return Row(
+                children: [
+                  Stack(
+                    children: [
+                      const SizedBox(
+                        width: 55,
+                        height: kToolbarHeight,
+                      ),
+                      Visibility(
+                        visible: purchReqProvider.purchReqPending != 0 ||
+                            purchOrderProvider.purchOrderPending != 0,
+                        child: Positioned(
+                          right: 5,
+                          top: 10,
                           child: Container(
                             width: 10,
                             height: 10,
                             decoration: const BoxDecoration(
                                 shape: BoxShape.circle, color: Colors.red),
-                          ));
-                    }))
-              ],
-            ),
-          ],
-          elevation: 0,
-          centerTitle: true,
-          title: ValueListenableBuilder<String>(
-              valueListenable: titleNotifier,
-              builder: (context, value, _) {
-                return Text(value);
-              }),
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.deepPurple, Colors.deepPurple],
-              ),
-            ),
-          ),
-        ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            })),
       ),
       drawer: Drawer(
         child: Stack(
@@ -353,7 +386,8 @@ class _MobileHomeState extends State<MobileHome>
                         child: Container(
                           decoration: BoxDecoration(
                             color: value == 0
-                                ? Colors.deepPurple
+                                // ? const Colors.deepPurple
+                                ? Colors.blueGrey
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -380,16 +414,10 @@ class _MobileHomeState extends State<MobileHome>
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.done) {
-                                      final List<PurchaseRequest> data =
-                                          snapshot.data['purchaseRequests'] ??
-                                              [];
-                                      int pending = data
-                                          .where((purchReq) =>
-                                              !purchReq.isFinal &&
-                                              !purchReq.isCancelled)
-                                          .length;
                                       return Visibility(
-                                        visible: pending != 0,
+                                        visible:
+                                            purchReqProvider.purchReqPending !=
+                                                0,
                                         child: Container(
                                           width: 20,
                                           height: 20,
@@ -399,7 +427,8 @@ class _MobileHomeState extends State<MobileHome>
                                           ),
                                           child: Center(
                                             child: Text(
-                                              pending.toString(),
+                                              purchReqProvider.purchReqPending
+                                                  .toString(),
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 12,
@@ -428,7 +457,8 @@ class _MobileHomeState extends State<MobileHome>
                         child: Container(
                           decoration: BoxDecoration(
                             color: value == 1
-                                ? Colors.deepPurple
+                                // ? const Colors.deepPurple
+                                ? Colors.blueGrey
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -455,15 +485,10 @@ class _MobileHomeState extends State<MobileHome>
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.done) {
-                                      final List<PurchaseOrder> data =
-                                          snapshot.data['purchaseOrders'] ?? [];
-                                      int pending = data
-                                          .where((purchOrder) =>
-                                              !purchOrder.isFinal &&
-                                              !purchOrder.isCancelled)
-                                          .length;
                                       return Visibility(
-                                        visible: pending != 0,
+                                        visible: purchOrderProvider
+                                                .purchOrderPending !=
+                                            0,
                                         child: Container(
                                           width: 20,
                                           height: 20,
@@ -473,7 +498,9 @@ class _MobileHomeState extends State<MobileHome>
                                           ),
                                           child: Center(
                                             child: Text(
-                                              pending.toString(),
+                                              purchOrderProvider
+                                                  .purchOrderPending
+                                                  .toString(),
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 12,
@@ -502,7 +529,8 @@ class _MobileHomeState extends State<MobileHome>
                         child: Container(
                           decoration: BoxDecoration(
                             color: value == 2
-                                ? Colors.deepPurple
+                                // ? const Colors.deepPurple
+                                ? Colors.blueGrey
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -576,7 +604,8 @@ class _MobileHomeState extends State<MobileHome>
                         child: Container(
                           decoration: BoxDecoration(
                             color: value == 3
-                                ? Colors.deepPurple
+                                // ? const Colors.deepPurple
+                                ? Colors.blueGrey
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -642,9 +671,10 @@ class _MobileHomeState extends State<MobileHome>
                                     sessionId: userProvider.user!.sessionId);
                                 if (!mounted) return;
                                 clearData(context);
-                                showToast('Logging Out Successful!');
+                                showToastMessage('Logging Out Successful!');
                               } catch (e) {
-                                showToast('Something Went Wrong!');
+                                showToastMessage('Something Went Wrong!');
+
                                 if (kDebugMode) {
                                   print('Error Logout: $e');
                                 }
@@ -717,8 +747,10 @@ class _MobileHomeState extends State<MobileHome>
                     final List<PurchaseRequest> data =
                         snapshot.data![0]['purchaseRequests'];
                     if (purchReqProvider.purchaseRequestList.isEmpty) {
-                      purchReqProvider.setList(
-                          purchaseRequestList: data, notify: false);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        purchReqProvider.setList(
+                            purchaseRequestList: data, notify: true);
+                      });
                     }
                   } else {
                     purchReqProvider
@@ -732,8 +764,10 @@ class _MobileHomeState extends State<MobileHome>
                     final List<PurchaseOrder> data2 =
                         snapshot.data![1]['purchaseOrders'];
                     if (purchOrderProvider.purchaseOrderList.isEmpty) {
-                      purchOrderProvider.setList(
-                          purchaseOrderList: data2, notify: false);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        purchOrderProvider.setList(
+                            purchaseOrderList: data2, notify: true);
+                      });
                     }
                   } else {
                     purchOrderProvider

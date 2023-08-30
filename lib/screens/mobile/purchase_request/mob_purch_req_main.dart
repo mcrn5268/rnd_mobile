@@ -39,7 +39,8 @@ class _MobilePurchReqMainState extends State<MobilePurchReqMain> {
                     child: ClipPath(
                       clipper: AppBarClipper(),
                       child: Container(
-                        color: Colors.deepPurple,
+                        // color: Colors.deepPurple,
+                        color: Colors.blueGrey,
                         height: 50,
                       ),
                     ),
@@ -129,7 +130,8 @@ class _MobilePurchReqMainState extends State<MobilePurchReqMain> {
                         border: Border(
                           bottom: BorderSide(
                             color: index == selectedIndex
-                                ? const Color(0xFF795FCD)
+                                // ? const Color(0xFF795FCD)
+                                ? Colors.blueGrey
                                 : Colors.transparent,
                             width: 2,
                           ),
@@ -141,7 +143,11 @@ class _MobilePurchReqMainState extends State<MobilePurchReqMain> {
                           style: TextStyle(
                             fontSize: 12,
                             color: index == selectedIndex
-                                ? const Color(0xFF795FCD)
+                                // ? const Color(0xFF795FCD)
+                                ? MediaQuery.of(context).platformBrightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.blueGrey
                                 : Colors.grey,
                           ),
                         ),

@@ -146,16 +146,12 @@ class _WebSalesOrderHistScreenState extends State<WebSalesOrderHistScreen> {
 
   void _loadMore() async {
     late List<SalesOrder> newSalesOrders;
-    // if (Provider.of<SalesOrderHistFilterProvider>(context, listen: false)
-    //         .status ==
-    //     OrderStatus.pending) {
     final data = await SalesOrderService.getSalesOrderView(
       sessionId: userProvider.user!.sessionId,
       recordOffset: _loadedItemsCount,
       forPending: true,
       forAll: true,
     );
-    print('data: $data');
     if (mounted) {
       bool salesOrderFlag = handleSessionExpiredException(data, context);
 
@@ -164,22 +160,6 @@ class _WebSalesOrderHistScreenState extends State<WebSalesOrderHistScreen> {
         hasMore = data['hasMore'];
       }
     }
-    // } else {
-    //   final data = await SalesOrderService.getSalesOrderView(
-    //     sessionId: userProvider.user!.sessionId,
-    //     recordOffset: _loadedItemsCount,
-    //     forAll: true,
-    //   );
-    //   print('data2: $data');
-    //   if (mounted) {
-    //     bool salesOrderFlag = handleSessionExpiredException(data, context);
-
-    //     if (!salesOrderFlag) {
-    //       newSalesOrders = data['salesOrders'];
-    //       hasMore = data['hasMore'];
-    //     }
-    //   }
-    // }
     setState(() {
       isLoadingMore = false;
       _loadedItemsCount += newSalesOrders.length;
@@ -930,7 +910,8 @@ class _WebSalesOrderHistScreenState extends State<WebSalesOrderHistScreen> {
                                   child: Container(
                                     height: 40,
                                     decoration: const BoxDecoration(
-                                        color: Color(0xFF795FCD),
+                                        // color: Color(0xFF795FCD),
+                                        color: Colors.blueGrey,
                                         border: Border.symmetric(
                                             horizontal: BorderSide(
                                                 color: Colors.white))),

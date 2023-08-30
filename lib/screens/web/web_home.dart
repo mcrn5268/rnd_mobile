@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firedart/firedart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,21 +10,25 @@ import 'package:rnd_mobile/api/auth_api.dart';
 import 'package:rnd_mobile/api/purchase_order_api.dart';
 import 'package:rnd_mobile/api/purchase_req_api.dart';
 import 'package:rnd_mobile/api/sales_order_api.dart';
+import 'package:rnd_mobile/firebase/firestore.dart';
 import 'package:rnd_mobile/models/purchase_order_model.dart';
 import 'package:rnd_mobile/models/purchase_req_model.dart';
 import 'package:rnd_mobile/models/sales_order_model.dart';
+import 'package:rnd_mobile/providers/notifications_provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purchase_order_provider.dart';
 import 'package:rnd_mobile/providers/purchase_request/purchase_req_provider.dart';
 import 'package:rnd_mobile/providers/refresh_icon_indicator_provider.dart';
 import 'package:rnd_mobile/providers/sales_order/sales_order_provider.dart';
 import 'package:rnd_mobile/providers/items/items_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
+import 'package:rnd_mobile/screens/admin/web/web_admin_main.dart';
 import 'package:rnd_mobile/screens/web/items/web_items_main.dart';
 import 'package:rnd_mobile/screens/web/purchase_order/web_purch_order_main.dart';
 import 'package:rnd_mobile/screens/web/purchase_request/web_purch_req_main.dart';
 import 'package:rnd_mobile/screens/web/sales_order/web_sales_order_main.dart';
 import 'package:rnd_mobile/utilities/clear_data.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
+import 'package:rnd_mobile/utilities/timestamp_formatter.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:rnd_mobile/widgets/greetings.dart';
 import 'package:rnd_mobile/widgets/show_dialog.dart';
@@ -52,6 +57,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
   late final SalesOrderProvider salesOrderProvider;
   late final ItemsProvider salesOrderItemsProvider;
   late final RefreshIconIndicatorProvider refreshIconIndicatorProvider;
+  late final NotificationProvider notifProvider;
   late List<Future<dynamic>> futures;
   late int selectedIndex;
   bool greetings = true;
@@ -76,15 +82,20 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
         Provider.of<ItemsProvider>(context, listen: false);
     refreshIconIndicatorProvider =
         Provider.of<RefreshIconIndicatorProvider>(context, listen: false);
+    notifProvider = Provider.of<NotificationProvider>(context, listen: false);
     if (purchReqProvider.purchaseRequestList.isEmpty ||
         purchOrderProvider.purchaseOrderList.isEmpty ||
         salesOrderProvider.salesOrderList.isEmpty ||
         salesOrderItemsProvider.items.isEmpty) {
+      //initial load
       futures = [
         _getPurchReqData(),
         _getPurchOrderData(),
         _getSalesOrderData(),
-        _getSalesOrderItemsData()
+        _getSalesOrderItemsData(),
+        FirestoreService().read(
+            collection: 'notifications',
+            documentId: userProvider.user!.username)
       ];
     } else {
       futures = _getLoadedData();
@@ -107,6 +118,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
   void dispose() {
     indexNotifier.dispose();
     _subscription?.cancel();
+    _subscription = null;
     super.dispose();
   }
 
@@ -173,9 +185,17 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
       (event) {
         if (stream) {
           final data = event.data()!;
-          webNotification(data: data);
-          //just for the refresh icon to show red indicator
-          refreshIconIndicatorProvider.setShow(show: true);
+          if (data['triggerStream'] == true) {
+            if (data['notifications'] != null) {
+              webNotification(data: data);
+              player.play('audio/notif_sound2.mp3',
+                  isNotification: true, volume: 0.5);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                notifProvider.setNotifications(data['notifications'],
+                    notify: true);
+              });
+            }
+          }
         }
         stream = true;
       },
@@ -183,25 +203,44 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
     );
   }
 
-  Future<void> webNotification({required Map<String, dynamic> data}) async {
-    final notification = js.JsObject(js.context['Notification'], [
-      '***New Purchase ${data['type'] == "PR" ? "Request" : "Order"}!***',
-      js.JsObject.jsify({
-        'body': data['type'] == "PR"
-            ? "Request Number: ${data["preqNum"]}"
-            : "Order Number: ${data["poNum"]}"
-      })
+  js.JsObject createNotification(String title, String body) {
+    showToastMessage(title);
+    return js.JsObject(js.context['Notification'], [
+      title,
+      js.JsObject.jsify({'body': body})
     ]);
+  }
+
+  Future<void> webNotification({required Map<String, dynamic> data}) async {
+    String type = data['notifications'].last['type'];
+    String body = data['notifications'].last[type == "group"
+        ? 'body'
+        : type == "PR"
+            ? 'preqNum'
+            : 'poNum'];
+    if (type != "group") {
+      //just for the refresh icon to show red indicator
+      refreshIconIndicatorProvider.setShow(show: true);
+    }
+    final notification = type == "group"
+        ? createNotification('New Notification!', body)
+        : createNotification(
+            'New Purchase ${type == "PR" ? "Request" : "Order"}!',
+            data['type'] == "PR"
+                ? "Request Number: ${data["preqNum"]}"
+                : "Order Number: ${data["poNum"]}");
     notification.callMethod('addEventListener', [
       'click',
       (event) {
         js.context.callMethod('focus');
-        futures = [
-          _getPurchReqData(button: true),
-          _getPurchOrderData(button: true),
-          _getSalesOrderData(button: true),
-          _getSalesOrderItemsData(button: true),
-        ];
+        if (type != "group") {
+          futures = [
+            _getPurchReqData(button: true),
+            _getPurchOrderData(button: true),
+            _getSalesOrderData(button: true),
+            _getSalesOrderItemsData(button: true),
+          ];
+        }
         //first for selected item in menu to update
         first = true;
         if (data['type'] == 'PR') {
@@ -315,24 +354,124 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
     super.build(context);
     return Scaffold(
         appBar: WebCustomAppBar(
-          menuItems: const [
+          menuItems: [
             'Purchase Request',
             'Purchase Order',
             'Sales Order',
-            'Items'
+            'Items',
+            '(Hidden)',
+            if (userProvider.user!.username == 'admin') 'Admin'
           ],
           onMenuItemSelected: (index) {
             indexNotifier.value = index;
           },
           selectedIndex: selectedIndex,
           actions: [
+            Consumer<NotificationProvider>(
+              builder: (context, consumerNotifProvider, child) {
+                return PopupMenuButton(
+                  tooltip: "Open Notifications",
+                  onCanceled: () async {
+                    consumerNotifProvider.setSeen(true);
+                    for (final notification
+                        in consumerNotifProvider.notifications) {
+                      notification['seen'] = true;
+                    }
+                    await FirestoreService().create(
+                        collection: 'notifications',
+                        documentId: userProvider.user!.username,
+                        data: {
+                          'notifications': consumerNotifProvider.notifications,
+                          'triggerStream': false
+                        });
+                  },
+                  itemBuilder: (BuildContext context) {
+                    final ScrollController scrollController =
+                        ScrollController();
+                    return [
+                      PopupMenuItem(
+                        enabled: false,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 200),
+                          child: Scrollbar(
+                            controller: scrollController,
+                            thumbVisibility: true,
+                            child: SingleChildScrollView(
+                              controller: scrollController,
+                              child: Column(
+                                children: List.generate(
+                                  consumerNotifProvider.notifications.length,
+                                  (index) {
+                                    final notif = consumerNotifProvider
+                                        .notifications[index];
+                                    return Column(
+                                      children: [
+                                        ListTile(
+                                          title: Text(
+                                              notif['type'] == 'PR'
+                                                  ? 'New Purchase Request #${notif['preqNum']}'
+                                                  : notif['type'] == 'PO'
+                                                      ? 'New Purchase Order #${notif['poNum']}'
+                                                      : notif['body'],
+                                              style: const TextStyle(
+                                                  fontSize: 13)),
+                                          subtitle: Text(
+                                              formatTimestampMillis(
+                                                  notif['timestamp']),
+                                              style: const TextStyle(
+                                                  fontSize: 10)),
+                                          trailing: Text(
+                                            notif['seen'] == true
+                                                ? '    '
+                                                : 'New!',
+                                            style: const TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 10),
+                                          ),
+                                        ),
+                                        const Divider(),
+                                      ],
+                                    );
+                                  },
+                                ).reversed.toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ];
+                  },
+                  icon: Stack(
+                    children: [
+                      const Icon(Icons.notifications),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Visibility(
+                          visible: !consumerNotifProvider.seen,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(
+                                shape: BoxShape.circle, color: Colors.red),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  offset: const Offset(0, 50),
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                );
+              },
+            ),
             Stack(
               children: [
                 IconButton(
                   icon: const Icon(Icons.refresh, color: Colors.white),
                   onPressed: () {
                     if (kIsWeb) {
-                      showToast('Refreshing data...');
+                      showToastMessage('Refreshing data...');
                     } else {
                       if (mounted) {
                         CustomToast.show(
@@ -415,7 +554,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                           clearData(context);
 
                           if (kIsWeb) {
-                            showToast('Logging Out Successful!');
+                            showToastMessage('Logging Out Successful!');
                           } else {
                             if (mounted) {
                               CustomToast.show(
@@ -425,7 +564,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                           }
                         } catch (e) {
                           if (kIsWeb) {
-                            showToast('Something Went Wrong!');
+                            showToastMessage('Something Went Wrong!');
                           } else {
                             if (mounted) {
                               CustomToast.show(
@@ -518,8 +657,10 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                       final List<PurchaseRequest> data =
                           snapshot.data![0]['purchaseRequests'];
                       if (purchReqProvider.purchaseRequestList.isEmpty) {
-                        purchReqProvider.setList(
-                            purchaseRequestList: data, notify: false);
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          purchReqProvider.setList(
+                              purchaseRequestList: data, notify: true);
+                        });
                       }
                     } else {
                       purchReqProvider
@@ -533,8 +674,10 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                       final List<PurchaseOrder> data2 =
                           snapshot.data![1]['purchaseOrders'];
                       if (purchOrderProvider.purchaseOrderList.isEmpty) {
-                        purchOrderProvider.setList(
-                            purchaseOrderList: data2, notify: false);
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          purchOrderProvider.setList(
+                              purchaseOrderList: data2, notify: true);
+                        });
                       }
                     } else {
                       purchOrderProvider
@@ -573,7 +716,15 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                           .addItems(items: [], notify: false);
                     }
 
-                    //todo
+                    //Notifications
+                    if (notifProvider.notifications.isEmpty) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        notifProvider.setNotifications(
+                            snapshot.data![4]['notifications'],
+                            notify: true);
+                      });
+                    }
+
                     //put the item from notif in first
                     if (purchReqProvider.reqNumber != -1 && refresh) {
                       PurchaseRequest item = purchReqProvider
@@ -606,14 +757,18 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                         // } else {
                         return IndexedStack(
                           index: value,
-                          children: const [
-                            WebPurchReqMain(),
-                            WebPurchOrderMain(),
-                            WebSalesOrderMain(),
-                            WebItemsMain(),
-                            GreetingsScreen(),
+                          children: [
+                            const WebPurchReqMain(),
+                            const WebPurchOrderMain(),
+                            const WebSalesOrderMain(),
+                            const WebItemsMain(),
+                            const GreetingsScreen(),
+                            userProvider.user!.username == 'admin'
+                                ? const WebAdmin()
+                                : const SizedBox.shrink()
                           ],
                         );
+
                         // }
                       },
                     );

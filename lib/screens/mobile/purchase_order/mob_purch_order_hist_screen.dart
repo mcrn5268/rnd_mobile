@@ -768,7 +768,8 @@ class _MobilePurchOrderHistScreenState
                             child: Container(
                               height: 40,
                               decoration: const BoxDecoration(
-                                  color: Color(0xFF795FCD),
+                                  // color: Color(0xFF795FCD),
+                                  color: Colors.blueGrey,
                                   border: Border.symmetric(
                                       horizontal:
                                           BorderSide(color: Colors.white))),

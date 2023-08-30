@@ -1,3 +1,5 @@
+import 'package:oktoast/oktoast.dart';
+import 'package:rnd_mobile/providers/notifications_provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purch_order_filter_provider.dart';
 import 'package:rnd_mobile/providers/purchase_request/purch_req_hist_filter_provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purchase_order_provider.dart';
@@ -6,6 +8,7 @@ import 'package:rnd_mobile/providers/refresh_icon_indicator_provider.dart';
 import 'package:rnd_mobile/providers/sales_order/sales_order_hist_filter.provider.dart';
 import 'package:rnd_mobile/providers/sales_order/sales_order_provider.dart';
 import 'package:rnd_mobile/providers/items/items_provider.dart';
+import 'package:rnd_mobile/screens/admin/web/web_admin_main.dart';
 import 'package:rnd_mobile/utilities/shared_pref.dart';
 import 'package:universal_io/io.dart';
 import 'package:flutter/material.dart';
@@ -109,6 +112,7 @@ void main() async {
   // );
   // setWindowMinSize(const Size(700, 600));
 
+  // runApp(WebAdmin());
   runApp(
     MultiProvider(
       providers: [
@@ -127,6 +131,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ItemsProvider()),
         //Refresh Icon Indicator
         ChangeNotifierProvider(create: (_) => RefreshIconIndicatorProvider()),
+        //Notifications
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MyApp(
         token: token,
@@ -162,138 +168,142 @@ class MyApp extends StatelessWidget {
   final String? token;
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'RnD',
-      theme: ThemeData(
-        primarySwatch: customSwatch,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        canvasColor: Colors.grey[900],
-        primarySwatch: customSwatch,
-        inputDecorationTheme: const InputDecorationTheme(
-          hintStyle: TextStyle(color: Colors.grey),
+    return OKToast(
+      child: MaterialApp(
+        title: 'RnD',
+        theme: ThemeData(
+          // primarySwatch: customSwatch,
+          primaryColor: Colors.blueGrey,
         ),
-        appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            toolbarHeight: 66,
-            titleTextStyle: TextStyle(fontSize: 20, color: Colors.white)),
-        checkboxTheme: CheckboxThemeData(
-          fillColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-            if (states.contains(MaterialState.disabled)) {
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          canvasColor: Colors.grey[900],
+          // primarySwatch: customSwatch,
+          primarySwatch: Colors.blueGrey,
+          inputDecorationTheme: const InputDecorationTheme(
+            hintStyle: TextStyle(color: Colors.grey),
+          ),
+          appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              toolbarHeight: 66,
+              titleTextStyle: TextStyle(fontSize: 20, color: Colors.white)),
+          checkboxTheme: CheckboxThemeData(
+            fillColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+              if (states.contains(MaterialState.disabled)) {
+                return null;
+              }
+              if (states.contains(MaterialState.selected)) {
+                return const Color(0xFF795FCD);
+              }
               return null;
-            }
-            if (states.contains(MaterialState.selected)) {
-              return const Color(0xFF795FCD);
-            }
-            return null;
-          }),
+            }),
+          ),
+          radioTheme: RadioThemeData(
+            fillColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+              if (states.contains(MaterialState.disabled)) {
+                return null;
+              }
+              if (states.contains(MaterialState.selected)) {
+                return const Color(0xFF795FCD);
+              }
+              return null;
+            }),
+          ),
+          switchTheme: SwitchThemeData(
+            thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+              if (states.contains(MaterialState.disabled)) {
+                return null;
+              }
+              if (states.contains(MaterialState.selected)) {
+                return const Color(0xFF795FCD);
+              }
+              return null;
+            }),
+            trackColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+              if (states.contains(MaterialState.disabled)) {
+                return null;
+              }
+              if (states.contains(MaterialState.selected)) {
+                return const Color(0xFF795FCD);
+              }
+              return null;
+            }),
+          ),
         ),
-        radioTheme: RadioThemeData(
-          fillColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-            if (states.contains(MaterialState.disabled)) {
-              return null;
-            }
-            if (states.contains(MaterialState.selected)) {
-              return const Color(0xFF795FCD);
-            }
-            return null;
-          }),
-        ),
-        switchTheme: SwitchThemeData(
-          thumbColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-            if (states.contains(MaterialState.disabled)) {
-              return null;
-            }
-            if (states.contains(MaterialState.selected)) {
-              return const Color(0xFF795FCD);
-            }
-            return null;
-          }),
-          trackColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-            if (states.contains(MaterialState.disabled)) {
-              return null;
-            }
-            if (states.contains(MaterialState.selected)) {
-              return const Color(0xFF795FCD);
-            }
-            return null;
-          }),
-        ),
-      ),
-      home: Consumer<UserProvider>(
-        builder: (context, userProvider, _) {
-          return FutureBuilder<Map<String, String>>(
-              //get user from sharedpreferences to reuse sessionId
-              future: SharedPreferencesService().getUser(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else {
-                  if (snapshot.hasData) {
-                    final data = snapshot.data!;
-                    if (data['username'] != '' && data['sessionId'] != '') {
-                      final user = UserModel(
-                          username: data['username']!,
-                          sessionId: data['sessionId']!);
-                      userProvider.setUser(user, notify: false);
-                    }
-                    if (userProvider.user == null) {
-                      // User is not logged in
-                      return const LoginScreen();
-                    } else {
-                      // User is logged in
-                      if (!Platform.isAndroid && !Platform.isIOS) {
-                        if (kIsWeb) {
-                          //web
-                          FirestoreService().create(
-                              collection: 'tokens',
-                              documentId: userProvider.user!.username,
-                              data: {'nonMobile': true});
-                        } else {
-                          //desktop
-                          Firestore.instance
-                              .collection("tokens")
-                              .document(userProvider.user!.username)
-                              .set({'nonMobile': true}, merge: true);
-                        }
-                      }
-                      //--------------------MOBILE---------------------
-
-                      else {
-                        if (token != null) {
-                          SharedPreferencesService().saveToken(token!);
-                          FirestoreService().create(
-                              collection: 'tokens',
-                              documentId: userProvider.user!.username,
-                              data: token,
-                              forDeviceToken: true);
-                        }
-                      }
-                      //web
-                      if (MediaQuery.of(context).size.width < 600) {
-                        return const MobileHome();
-                      } else {
-                        return const WebHome();
-                      }
-
-                      //mobile
-                      // return const MobileHome();
-
-                      //desktop
-                      // return const WebHome();
-                    }
+        home: Consumer<UserProvider>(
+          builder: (context, userProvider, _) {
+            return FutureBuilder<Map<String, String>>(
+                //get user from sharedpreferences to reuse sessionId
+                future: SharedPreferencesService().getUser(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
                   } else {
-                    return const Center(child: Text('Something Went Wrong'));
+                    if (snapshot.hasData) {
+                      final data = snapshot.data!;
+                      if (data['username'] != '' && data['sessionId'] != '') {
+                        final user = UserModel(
+                            username: data['username']!,
+                            sessionId: data['sessionId']!);
+                        userProvider.setUser(user, notify: false);
+                      }
+                      if (userProvider.user == null) {
+                        // User is not logged in
+                        return const LoginScreen();
+                      } else {
+                        // User is logged in
+                        if (!Platform.isAndroid && !Platform.isIOS) {
+                          if (kIsWeb) {
+                            //web uses firebase firestore
+                            FirestoreService().create(
+                                collection: 'tokens',
+                                documentId: userProvider.user!.username,
+                                data: {'nonMobile': true});
+                          } else {
+                            //desktop uses firedart
+                            Firestore.instance
+                                .collection("tokens")
+                                .document(userProvider.user!.username)
+                                .set({'nonMobile': true}, merge: true);
+                          }
+                        }
+                        //--------------------MOBILE---------------------
+
+                        else {
+                          if (token != null) {
+                            SharedPreferencesService().saveToken(token!);
+                            FirestoreService().create(
+                                collection: 'tokens',
+                                documentId: userProvider.user!.username,
+                                data: token,
+                                forDeviceToken: true);
+                          }
+                        }
+                        //web
+                        // if (MediaQuery.of(context).size.width < 600) {
+                        //   return const MobileHome();
+                        // } else {
+                        return const WebHome();
+                        // }
+
+                        //mobile
+                        // return const MobileHome();
+
+                        //desktop
+                        // return const WebHome();
+                      }
+                    } else {
+                      return const Center(child: Text('Something Went Wrong'));
+                    }
                   }
-                }
-              });
-        },
+                });
+          },
+        ),
       ),
     );
   }
@@ -336,6 +346,13 @@ const MaterialColor customSwatch = MaterialColor(
 
 //PR
 // curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PR\",\"preqNum\":\"25\",\"requestDate\":\"16\",\"reference\":\"16\",\"warehouse\":\"16\",\"requestedBy\":\"16\",\"reason\":\"16\"}" http://192.168.254.163:3000/send-push-notification
+//PR only preqNum
+// curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PR\",\"preqNum\":\"44\"}" http://192.168.254.163:3000/send-push-notification
 
 //PO
 // curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PO\",\"poNum\":\"16\",\"poDate\":\"16\",\"delvDate\":\"16\",\"reference\":\"16\",\"warehouse\":\"16\",\"purpose\":\"16\",\"remarks\":\"16\"}" http://192.168.254.163:3000/send-push-notification
+//PO only poNum
+//curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PO\",\"poNum\":\"21\"}" http://192.168.254.163:3000/send-push-notification
+
+//group
+// curl -X POST -H "Content-Type: application/json" -d "{\"group\":\"groupname\",\"type\":\"group\",\"title\":\"Group Notif Title\",\"body\":\"group notif test\"}" http://192.168.254.163:3000/send-push-notification-group

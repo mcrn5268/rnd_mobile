@@ -17,6 +17,15 @@ class _WebPurchOrderMainState extends State<WebPurchOrderMain> {
   int selectedIndex = 0;
   final ScrollController _scrollController = ScrollController();
   double scrollAmount = 200.0;
+  late PurchOrderProvider purchOrderProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    purchOrderProvider =
+        Provider.of<PurchOrderProvider>(context, listen: false);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -41,41 +50,84 @@ class _WebPurchOrderMainState extends State<WebPurchOrderMain> {
                 //mapping through menuItems to create the menu navigation for Purchase Order
                 ...menuItems.map((item) {
                   int index = menuItems.indexOf(item);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = index;
-                        _searchController.clear();
-                      });
-                      Provider.of<PurchOrderProvider>(context, listen: false)
-                          .removeSearch();
-                    },
-                    child: Container(
-                      height: 70,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: index == selectedIndex
-                                ? const Color(0xFF795FCD)
-                                : Colors.transparent,
-                            width: 2,
+                  return Stack(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                            _searchController.clear();
+                          });
+                          purchOrderProvider.removeSearch();
+                        },
+                        child: Container(
+                          height: 70,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: index == selectedIndex
+                                    // ? const Color(0xFF795FCD)
+                                    ? MediaQuery.of(context)
+                                                .platformBrightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.blueGrey
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              item,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: index == selectedIndex
+                                    // ? const Color(0xFF795FCD)
+                                    ? MediaQuery.of(context)
+                                                .platformBrightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.blueGrey
+                                    : Colors.grey,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          item,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: index == selectedIndex
-                                ? const Color(0xFF795FCD)
-                                : Colors.grey,
+                      if (index == 0) ...[
+                        Visibility(
+                          visible: Provider.of<PurchOrderProvider>(context,
+                                      listen: true)
+                                  .purchOrderPending !=
+                              0,
+                          child: Positioned(
+                            right: 0,
+                            top: 5,
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: const BoxDecoration(
+                                  shape: BoxShape.circle, color: Colors.red),
+                              child: Center(
+                                child: Text(
+                                  Provider.of<PurchOrderProvider>(context,
+                                          listen: true)
+                                      .purchOrderPending
+                                      .toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      ]
+                    ],
                   );
                 }),
                 const Spacer(),
@@ -98,9 +150,7 @@ class _WebPurchOrderMainState extends State<WebPurchOrderMain> {
                           child: IconButton(
                             icon: const Icon(Icons.close, size: 25),
                             onPressed: () {
-                              Provider.of<PurchOrderProvider>(context,
-                                      listen: false)
-                                  .removeSearch();
+                              purchOrderProvider.removeSearch();
                               setState(() {
                                 _searchController.clear();
                               });
@@ -110,8 +160,7 @@ class _WebPurchOrderMainState extends State<WebPurchOrderMain> {
                       ),
                       onChanged: (value) {
                         setState(() {});
-                        Provider.of<PurchOrderProvider>(context, listen: false)
-                            .setSearch(search: value);
+                        purchOrderProvider.setSearch(search: value);
                       },
                     ))
               ],

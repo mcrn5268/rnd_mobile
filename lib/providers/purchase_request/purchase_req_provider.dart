@@ -9,6 +9,9 @@ class PurchReqProvider extends ChangeNotifier {
   List<PurchaseRequest> get purchaseRequestList => _purchaseRequestList;
   int get reqNumber => _reqNumber;
   String? get search => _search;
+  int get purchReqPending => _purchaseRequestList
+      .where((purchReq) => !purchReq.isFinal && !purchReq.isCancelled)
+      .length;
 
   void setReqNumber({required int reqNumber, bool notify = false}) {
     _reqNumber = reqNumber;

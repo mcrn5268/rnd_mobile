@@ -270,6 +270,10 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
                             offset: const Offset(0, 1),
                           ),
                         ],
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.only(left: 3),
@@ -457,7 +461,7 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
                                             ],
                                             border: Border.all(
                                               color: lineColor,
-                                              width: 1,
+                                              width: 0.5,
                                             ),
                                           ),
                                           child: InkWell(
@@ -736,6 +740,9 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
                                                                           poId:
                                                                               order.id);
                                                                     }
+                                                                    bool
+                                                                        messageIsError =
+                                                                        false;
                                                                     String
                                                                         message;
 
@@ -744,20 +751,26 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
                                                                         200) {
                                                                       message = status ==
                                                                               ApprovalStatus.approve
-                                                                          ? 'Approved'
-                                                                          : 'Denied';
+                                                                          ? 'PO #${order.poNumber} Approved'
+                                                                          : 'PO #${order.poNumber} Denied';
                                                                     } else if (response
                                                                             .statusCode ==
                                                                         401) {
+                                                                      messageIsError =
+                                                                          true;
                                                                       message =
                                                                           'Session Expired. Please Login Again.';
                                                                     } else {
+                                                                      messageIsError =
+                                                                          true;
                                                                       message =
                                                                           'Error! Something Went Wrong!\n${response.body}';
                                                                     }
                                                                     if (kIsWeb) {
-                                                                      showToast(
-                                                                          message);
+                                                                      showToastMessage(
+                                                                          message,
+                                                                          errorToast:
+                                                                              messageIsError);
                                                                     } else {
                                                                       if (mounted) {
                                                                         CustomToast.show(
@@ -1151,7 +1164,8 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
                                   child: Container(
                                     height: 40,
                                     decoration: const BoxDecoration(
-                                        color: Color(0xFF795FCD),
+                                        // color: Color(0xFF795FCD),
+                                        color: Colors.blueGrey,
                                         border: Border.symmetric(
                                             horizontal: BorderSide(
                                                 color: Colors.white))),

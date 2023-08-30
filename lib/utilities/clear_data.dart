@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:rnd_mobile/main.dart';
+import 'package:rnd_mobile/providers/notifications_provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/puch_order_hist_filter_provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purch_order_filter_provider.dart';
 import 'package:rnd_mobile/providers/purchase_request/purch_req_filter_provider.dart';
@@ -42,6 +43,10 @@ void clearData(BuildContext context) {
 
     //user provider
     Provider.of<UserProvider>(context, listen: false).clearUser(notify: false);
+
+    //notifications
+    Provider.of<NotificationProvider>(context, listen: false).clearNotifications(notify: false);
+    Provider.of<NotificationProvider>(context, listen: false).clearSeen(notify: false);
   } catch (e) {
     if (kDebugMode) {
       print('Error: $e');

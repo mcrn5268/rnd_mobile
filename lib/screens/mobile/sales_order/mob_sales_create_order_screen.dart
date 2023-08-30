@@ -11,10 +11,12 @@ import 'package:rnd_mobile/models/top_model.dart';
 import 'package:rnd_mobile/models/warehouse_model.dart';
 import 'package:rnd_mobile/providers/items/items_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
+import 'package:rnd_mobile/utilities/date_string_formatter.dart';
 import 'package:rnd_mobile/utilities/date_text_formatter.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_sales_order_items.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
+import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class MobileSalesCreateOrderScreen extends StatefulWidget {
@@ -31,10 +33,14 @@ class _MobileSalesCreateOrderScreenState
   final TextEditingController _salesOrderDateController =
       TextEditingController();
   final TextEditingController _deliveryDateController = TextEditingController();
-  final TextEditingController _debtorController = TextEditingController();
-  final TextEditingController _warehouseController = TextEditingController();
-  final TextEditingController _topController = TextEditingController();
-  final TextEditingController _salesRepController = TextEditingController();
+  bool _debtorClear = false;
+  bool _warehouseClear = false;
+  bool _topClear = false;
+  bool _salesRepClear = false;
+  // final TextEditingController _debtorController = TextEditingController();
+  // final TextEditingController _warehouseController = TextEditingController();
+  // final TextEditingController _topController = TextEditingController();
+  // final TextEditingController _salesRepController = TextEditingController();
   // final TextEditingController _itemController = TextEditingController();
   // final TextEditingController _itemUnitController = TextEditingController();
   final TextEditingController _referenceController = TextEditingController();
@@ -107,6 +113,8 @@ class _MobileSalesCreateOrderScreenState
   String? _warehouseErrorText;
   String? _topErrorText;
   String? _salesRepErrorText;
+  bool _salesOrderDateNotValid = false;
+  bool _salesOrderDelvDateNotValid = false;
 
   //for date picker
   CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -140,10 +148,10 @@ class _MobileSalesCreateOrderScreenState
   void dispose() {
     _salesOrderDateController.dispose();
     _deliveryDateController.dispose();
-    _debtorController.dispose();
-    _warehouseController.dispose();
-    _topController.dispose();
-    _salesRepController.dispose();
+    // _debtorController.dispose();
+    // _warehouseController.dispose();
+    // _topController.dispose();
+    // _salesRepController.dispose();
     _referenceController.dispose();
     _particularsController.dispose();
     _conversionFactorController.dispose();
@@ -331,21 +339,23 @@ class _MobileSalesCreateOrderScreenState
               try {
                 final date = format.parseStrict(value);
                 if (date.year >= 2010 && date.year <= 2050) {
-                  setState(() {
-                    _salesOrderDate = date;
-                    _salesOrderfocusedDay = date;
-                    _showOverlaySalesOrderDate = false;
-                  });
+                  _salesOrderDate = date;
+                  _salesOrderfocusedDay = date;
+                  _showOverlaySalesOrderDate = false;
+                  _salesOrderDateNotValid = false;
                 } else {
                   // The entered date is not within the valid range
                   _salesOrderDate = null;
                   _salesOrderfocusedDay = DateTime.now();
+                  _salesOrderDateNotValid = true;
                 }
               } catch (e) {
                 // The entered date is not valid
                 _salesOrderDate = null;
                 _salesOrderfocusedDay = DateTime.now();
+                _salesOrderDateNotValid = true;
               }
+              setState(() {});
             }
           },
           onTap: () {
@@ -417,21 +427,24 @@ class _MobileSalesCreateOrderScreenState
               try {
                 final date = format.parseStrict(value);
                 if (date.year >= 2010 && date.year <= 2050) {
-                  setState(() {
-                    _salesOrderDelvDate = date;
-                    _salesOrderDelvfocusedDay = date;
-                    _showOverlaySalesOrderDelvDate = false;
-                  });
+                  _salesOrderDelvDate = date;
+                  _salesOrderDelvfocusedDay = date;
+                  _showOverlaySalesOrderDelvDate = false;
+                  _salesOrderDelvDateNotValid = false;
                 } else {
                   // The entered date is not within the valid range
                   _salesOrderDelvDate = null;
                   _salesOrderDelvfocusedDay = DateTime.now();
+                  _salesOrderDelvDateNotValid = true;
                 }
               } catch (e) {
+                print('catch e: $e');
                 // The entered date is not valid
                 _salesOrderDelvDate = null;
                 _salesOrderDelvfocusedDay = DateTime.now();
+                _salesOrderDelvDateNotValid = true;
               }
+              setState(() {});
             }
           },
           onTap: () {
@@ -561,6 +574,10 @@ class _MobileSalesCreateOrderScreenState
               TextEditingController fieldTextEditingController,
               FocusNode fieldFocusNode,
               VoidCallback onFieldSubmitted) {
+            if (_debtorClear) {
+              fieldTextEditingController.clear();
+              _debtorClear = false;
+            }
             return TextField(
                 controller: fieldTextEditingController,
                 focusNode: fieldFocusNode,
@@ -682,8 +699,7 @@ class _MobileSalesCreateOrderScreenState
                                               _loadedDebtors += _debtors.length;
                                               _debtorIsLoadingMore.value =
                                                   false;
-                                              _debtorController.text = ' ';
-                                              _debtorController.clear();
+                                              _debtorClear = true;
                                               _debtorLoadMoreCounter++;
                                               _debtorJumpLoadMore = true;
                                             });
@@ -834,6 +850,10 @@ class _MobileSalesCreateOrderScreenState
               TextEditingController fieldTextEditingController,
               FocusNode fieldFocusNode,
               VoidCallback onFieldSubmitted) {
+            if (_warehouseClear) {
+              fieldTextEditingController.clear();
+              _warehouseClear = false;
+            }
             return TextField(
                 controller: fieldTextEditingController,
                 focusNode: fieldFocusNode,
@@ -958,8 +978,7 @@ class _MobileSalesCreateOrderScreenState
                                                   _warehouse.length;
                                               _warehouseIsLoadingMore.value =
                                                   false;
-                                              _warehouseController.text = ' ';
-                                              _warehouseController.clear();
+                                              _warehouseClear = true;
                                               _whsLoadMoreCounter++;
                                               _whsJumpLoadMore = true;
                                             });
@@ -1067,18 +1086,18 @@ class _MobileSalesCreateOrderScreenState
                 //uses simple_search_value filter
                 late final Map<String, dynamic> search;
 
-                if (_prevSearchResult.containsKey('top') &&
-                    _prevSearchResult['top']
+                if (_prevSearchResult.containsKey('tops') &&
+                    _prevSearchResult['tops']
                         .containsKey(textEditingValue.text)) {
                   //if input is already stored in previous search result
                   //then reuse that list
-                  return _prevSearchResult['top'][textEditingValue.text];
+                  return _prevSearchResult['tops'][textEditingValue.text];
                 } else {
                   //else then get a new list from API
                   search = await SalesOrderService.getTOPView(
                       sessionId: userProvider.user!.sessionId,
                       search: textEditingValue.text);
-                  List<dynamic> resultTOP = search['top'];
+                  List<dynamic> resultTOP = search['tops'];
                   List<TermsOfPayment> searchResult = resultTOP
                       .map((topsList) => TermsOfPayment(
                             topId: topsList[0],
@@ -1095,9 +1114,9 @@ class _MobileSalesCreateOrderScreenState
 
                   //create the previous search result
                   if (!_prevSearchResult.containsKey('top')) {
-                    _prevSearchResult['top'] = {};
+                    _prevSearchResult['tops'] = {};
                   }
-                  _prevSearchResult['top'][textEditingValue.text] =
+                  _prevSearchResult['tops'][textEditingValue.text] =
                       searchResult;
                   return searchResult;
                 }
@@ -1110,6 +1129,10 @@ class _MobileSalesCreateOrderScreenState
               TextEditingController fieldTextEditingController,
               FocusNode fieldFocusNode,
               VoidCallback onFieldSubmitted) {
+            if (_topClear) {
+              fieldTextEditingController.clear();
+              _topClear = false;
+            }
             return TextField(
                 controller: fieldTextEditingController,
                 focusNode: fieldFocusNode,
@@ -1206,7 +1229,7 @@ class _MobileSalesCreateOrderScreenState
                                                         recordOffset:
                                                             _loadedTops);
                                             List<dynamic> resultTOP =
-                                                result['top'];
+                                                result['tops'];
                                             List<TermsOfPayment> searchResult =
                                                 resultTOP
                                                     .map((topsList) =>
@@ -1225,8 +1248,7 @@ class _MobileSalesCreateOrderScreenState
                                               _topsHasMore = result['hasMore'];
                                               _loadedTops += _tops.length;
                                               _topIsLoadingMore.value = false;
-                                              _topController.text = ' ';
-                                              _topController.clear();
+                                              _topClear = true;
                                               _topLoadMoreCounter++;
                                               _topJumpLoadMore = true;
                                             });
@@ -1334,18 +1356,19 @@ class _MobileSalesCreateOrderScreenState
                 //uses simple_search_value filter
                 late final Map<String, dynamic> search;
 
-                if (_prevSearchResult.containsKey('salesRep') &&
-                    _prevSearchResult['salesRep']
+                if (_prevSearchResult.containsKey('salesReps') &&
+                    _prevSearchResult['salesReps']
                         .containsKey(textEditingValue.text)) {
                   //if input is already stored in previous search result
                   //then reuse that list
-                  return _prevSearchResult['salesRep'][textEditingValue.text];
+                  return _prevSearchResult['salesReps'][textEditingValue.text];
                 } else {
                   //else then get a new list from API
                   search = await SalesOrderService.getSalesRepView(
                       sessionId: userProvider.user!.sessionId,
                       search: textEditingValue.text);
-                  List<dynamic> resultSalesRep = search['salesRep'];
+                  List<dynamic> resultSalesRep = search['salesReps'];
+                  print('resultSalesRep: $resultSalesRep');
                   List<SalesRep> searchResult = resultSalesRep
                       .map((salesRepsList) => SalesRep(
                             salesRepId: salesRepsList[0],
@@ -1362,9 +1385,9 @@ class _MobileSalesCreateOrderScreenState
 
                   //create the previous search result
                   if (!_prevSearchResult.containsKey('salesRep')) {
-                    _prevSearchResult['salesRep'] = {};
+                    _prevSearchResult['salesReps'] = {};
                   }
-                  _prevSearchResult['salesRep'][textEditingValue.text] =
+                  _prevSearchResult['salesReps'][textEditingValue.text] =
                       searchResult;
                   return searchResult;
                 }
@@ -1377,6 +1400,10 @@ class _MobileSalesCreateOrderScreenState
               TextEditingController fieldTextEditingController,
               FocusNode fieldFocusNode,
               VoidCallback onFieldSubmitted) {
+            if (_salesRepClear) {
+              fieldTextEditingController.clear();
+              _salesRepClear = false;
+            }
             return TextField(
                 controller: fieldTextEditingController,
                 focusNode: fieldFocusNode,
@@ -1476,7 +1503,7 @@ class _MobileSalesCreateOrderScreenState
                                                         recordOffset:
                                                             _loadedSalesReps);
                                             List<dynamic> resultSalesRep =
-                                                result['salesRep'];
+                                                result['salesReps'];
                                             List<SalesRep> searchResult =
                                                 resultSalesRep
                                                     .map((salesRepsList) =>
@@ -1501,8 +1528,7 @@ class _MobileSalesCreateOrderScreenState
                                                   _salesReps.length;
                                               _salesRepIsLoadingMore.value =
                                                   false;
-                                              _salesRepController.text = ' ';
-                                              _salesRepController.clear();
+                                              _salesRepClear = true;
                                               _salesRepLoadMoreCounter++;
                                               _salesRepJumpLoadMore = true;
                                             });
@@ -1601,8 +1627,12 @@ class _MobileSalesCreateOrderScreenState
                             enabled: false,
                             decoration: InputDecoration(
                               disabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.black),
+                                borderSide: BorderSide(
+                                    color: MediaQuery.of(context)
+                                                .platformBrightness ==
+                                            Brightness.dark
+                                        ? Colors.black
+                                        : Colors.transparent),
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               labelText: 'Line Number',
@@ -1901,8 +1931,12 @@ class _MobileSalesCreateOrderScreenState
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               disabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.black),
+                                borderSide: BorderSide(
+                                    color: MediaQuery.of(context)
+                                                .platformBrightness ==
+                                            Brightness.dark
+                                        ? Colors.black
+                                        : Colors.transparent),
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -2012,8 +2046,12 @@ class _MobileSalesCreateOrderScreenState
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
                                 disabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.black),
+                                  borderSide: BorderSide(
+                                      color: MediaQuery.of(context)
+                                                  .platformBrightness ==
+                                              Brightness.dark
+                                          ? Colors.black
+                                          : Colors.transparent),
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -2192,7 +2230,8 @@ class _MobileSalesCreateOrderScreenState
     Widget createButtonWidget = Expanded(
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF795FCD),
+          // backgroundColor: const Color(0xFF795FCD),
+          backgroundColor: Colors.blueGrey,
           shape: RoundedRectangleBorder(
             side: const BorderSide(color: Colors.grey),
             borderRadius: BorderRadius.circular(10),
@@ -2206,18 +2245,29 @@ class _MobileSalesCreateOrderScreenState
           String? reference = _referenceController.text.isNotEmpty
               ? _referenceController.text
               : null;
+
           String? soDate = _salesOrderDate?.toIso8601String();
           if (soDate == null) {
             // showToast('Sales Order Date is empty');
             proceed = false;
-            _salesOrderDateErrorText = 'Sales Order Date is empty';
+            _salesOrderDateErrorText = _salesOrderDateNotValid
+                ? 'Sales Order Date is not valid'
+                : 'Sales Order Date is empty';
+          } else {
+            soDate = formatTimestamp(soDate);
+            print('soDate: $soDate');
           }
 
           String? deliveryDate = _salesOrderDelvDate?.toIso8601String();
           if (deliveryDate == null) {
             // showToast('Delivery Date is empty');
             proceed = false;
-            _salesOrderDelvDateErrorText = 'Delivery Date is empty';
+            _salesOrderDelvDateErrorText = _salesOrderDelvDateNotValid
+                ? 'Delivery Date is not valid'
+                : 'Delivery Date is empty';
+          } else {
+            deliveryDate = formatTimestamp(deliveryDate);
+            print('soDdeliveryDateate: $deliveryDate');
           }
           // final debtorID = double.parse(_selectedDebtor[0].toString());
           // final whsID = double.parse(_selectedWarehouse[0].toString());
@@ -2330,52 +2380,65 @@ class _MobileSalesCreateOrderScreenState
               lines: lines,
             ).then((response) {
               if (response.statusCode == 200) {
-                showToast('Sales Order Created!', timeInSecForWeb: 5);
-                setState(() {
-                  _referenceController.clear();
-                  _salesOrderDate = null;
-                  _salesOrderDateController.clear();
-                  _salesOrderDelvDate = null;
-                  _deliveryDateController.clear();
-                  _debtorController.clear();
-                  _warehouseController.clear();
-                  _topController.clear();
-                  _salesRepController.clear();
-                  _particularsController.clear();
-                  _conversionFactorController.clear();
-                  for (var controller in _itemsControllerList) {
-                    controller.clear();
-                  }
-                  for (var controller in _itemsLineNumberControllerList) {
-                    controller.clear();
-                  }
-                  _itemsLineNumberControllerList.clear();
-                  for (var controller in _itemsUnitControllerList) {
-                    controller.clear();
-                  }
-                  _itemsUnitControllerList.clear();
-                  for (var controller in _itemsQuantityControllerList) {
-                    controller.clear();
-                  }
-                  _itemsQuantityControllerList.clear();
-                  for (var controller in _itemsPriceControllerList) {
-                    controller.clear();
-                  }
-                  _itemsPriceControllerList.clear();
-                  // _itemsRowList.clear();
-                  // _addNewWidget();
-                  _itemIsActive.clear();
-                  _itemIsActive.add(true);
-                });
+                // showToast('Sales Order Created!', timeInSecForWeb: 5);
+                showToastMessage('Sales Order Created!');
+                try {
+                  setState(() {
+                    _referenceController.clear();
+                    _salesOrderDate = null;
+                    _salesOrderDateController.clear();
+                    _salesOrderDelvDate = null;
+                    _deliveryDateController.clear();
+                    _debtorClear = true;
+                    _warehouseClear = true;
+                    _topClear = true;
+                    _salesRepClear = true;
+                    _particularsController.clear();
+                    _conversionFactorController.clear();
+                    _selectedDebtor = null;
+                    _selectedWarehouse = null;
+                    _selectedTOP = null;
+                    _selectedSalesRep = null;
+                    for (var controller in _itemsControllerList) {
+                      controller.clear();
+                    }
+                    for (var controller in _itemsLineNumberControllerList) {
+                      controller.clear();
+                    }
+                    _itemsLineNumberControllerList.clear();
+                    for (var controller in _itemsUnitControllerList) {
+                      controller.clear();
+                    }
+                    _itemsUnitControllerList.clear();
+                    for (var controller in _itemsQuantityControllerList) {
+                      controller.clear();
+                    }
+                    _itemsQuantityControllerList.clear();
+                    for (var controller in _itemsPriceControllerList) {
+                      controller.clear();
+                    }
+                    _itemsPriceControllerList.clear();
+                    // _itemsRowList.clear();
+                    // _addNewWidget();
+                    addItem();
+                    _itemIsActive.clear();
+                    _itemIsActive.add(true);
+                  });
+                } catch (e) {
+                  print('something errorrrrr: $e');
+                }
               } else {
-                showToast('An Error Has Occured!');
+                showToastMessage(
+                    'An Error Has Occured!\nstatus code: ${response.statusCode}\nbody: ${response.body}',
+                    errorToast: true);
                 if (kDebugMode) {
                   print(
                       'status code: ${response.statusCode}\nbody: ${response.body}');
                 }
               }
             }).catchError((error) {
-              showToast('An Error Has Occured!: $error');
+              showToastMessage('An Error Has Occured!: $error',
+                  errorToast: true);
             });
           }
           setState(() {

@@ -16,7 +16,8 @@ class WebSalesOrderLineScreen extends StatelessWidget {
     var delvDate = DateFormat.yMMMd().format(order.deliveryDate);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF795FCD),
+        // backgroundColor: const Color(0xFF795FCD),
+        backgroundColor: Colors.blueGrey,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_outlined),
           onPressed: () {
@@ -269,19 +270,20 @@ class WebSalesOrderLineScreen extends StatelessWidget {
             child: Container(
               height: 56,
               decoration: BoxDecoration(
-                // borderRadius: BorderRadius.circular(20),
-                color: MediaQuery.of(context).platformBrightness ==
+                  // borderRadius: BorderRadius.circular(20),
+                  color: MediaQuery.of(context).platformBrightness ==
                           Brightness.dark
                       ? Colors.grey[900]
                       : Colors.grey[300],
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 0.5,
-                    blurRadius: 1,
-                    offset: const Offset(0, 1),
-                  ),
-                ],border: Border.all(color: Colors.grey)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 0.5,
+                      blurRadius: 1,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey)),
               child: const Row(
                 children: [
                   SizedBox(

@@ -38,7 +38,8 @@ class _MobileItemsMainState extends State<MobileItemsMain> {
                     child: ClipPath(
                       clipper: AppBarClipper(),
                       child: Container(
-                        color: Colors.deepPurple,
+                                  // color: Colors.deepPurple,
+                                  color: Colors.blueGrey,
                         height: 50,
                       ),
                     ),

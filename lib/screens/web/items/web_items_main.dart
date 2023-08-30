@@ -57,7 +57,11 @@ class _WebItemsMainState extends State<WebItemsMain> {
                         border: Border(
                           bottom: BorderSide(
                             color: index == selectedIndex
-                                ? const Color(0xFF795FCD)
+                                // ? const Color(0xFF795FCD)
+                                ? MediaQuery.of(context).platformBrightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.blueGrey
                                 : Colors.transparent,
                             width: 2,
                           ),
@@ -69,7 +73,11 @@ class _WebItemsMainState extends State<WebItemsMain> {
                           style: TextStyle(
                             fontSize: 12,
                             color: index == selectedIndex
-                                ? const Color(0xFF795FCD)
+                                // ? const Color(0xFF795FCD)
+                                ? MediaQuery.of(context).platformBrightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.blueGrey
                                 : Colors.grey,
                           ),
                         ),

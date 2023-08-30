@@ -39,7 +39,8 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
                     child: ClipPath(
                       clipper: AppBarClipper(),
                       child: Container(
-                        color: Colors.deepPurple,
+                        // color: Colors.deepPurple,
+                        color: Colors.blueGrey,
                         height: 50,
                       ),
                     ),
@@ -70,8 +71,10 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
                             contentPadding:
                                 const EdgeInsets.symmetric(vertical: 18),
                             hintText: 'Search',
-                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
-                            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                            hintStyle: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                            prefixIcon:
+                                const Icon(Icons.search, color: Colors.grey),
                             suffixIcon: Visibility(
                               visible: _searchController.text.isNotEmpty,
                               child: IconButton(
@@ -135,7 +138,8 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
                       border: Border(
                         bottom: BorderSide(
                           color: index == selectedIndex
-                              ? const Color(0xFF795FCD)
+                              // ? const Color(0xFF795FCD)
+                              ? Colors.blueGrey
                               : Colors.transparent,
                           width: 2,
                         ),
@@ -147,7 +151,8 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
                         style: TextStyle(
                           fontSize: 12,
                           color: index == selectedIndex
-                              ? const Color(0xFF795FCD)
+                              // ? const Color(0xFF795FCD)
+                              ? MediaQuery.of(context).platformBrightness == Brightness.dark?Colors.white:Colors.blueGrey
                               : Colors.grey,
                         ),
                       ),

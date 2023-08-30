@@ -12,7 +12,8 @@ bool handleSessionExpiredException(dynamic data, BuildContext context) {
       data['error']['class'] == 'ESessionExpiredException') {
     if (!alreadyShowedDialog) {
       if (kIsWeb || Platform.isAndroid) {
-        showToast('Session Expired. Please Login Again.');
+        showToastMessage('Session Expired. Please Login Again.',
+            errorToast: true);
       } else {
         CustomToast.show(
             context: context, message: 'Session Expired. Please Login Again.');
