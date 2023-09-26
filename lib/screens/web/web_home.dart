@@ -29,6 +29,7 @@ import 'package:rnd_mobile/screens/web/sales_order/web_sales_order_main.dart';
 import 'package:rnd_mobile/utilities/clear_data.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/utilities/timestamp_formatter.dart';
+import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:rnd_mobile/widgets/greetings.dart';
 import 'package:rnd_mobile/widgets/show_dialog.dart';
@@ -91,8 +92,8 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
       futures = [
         _getPurchReqData(),
         _getPurchOrderData(),
-        _getSalesOrderData(),
-        _getSalesOrderItemsData(),
+        // _getSalesOrderData(),
+        // _getSalesOrderItemsData(),
         FirestoreService().read(
             collection: 'notifications',
             documentId: userProvider.user!.username)
@@ -141,7 +142,8 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
         sessionId: userProvider.user!.sessionId,
         recordOffset: 0,
         forPending: true,
-        forAll: true);
+        // forAll: true
+        );
   }
 
   Future<dynamic> _getPurchOrderData({bool button = false}) {
@@ -153,28 +155,29 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
         sessionId: userProvider.user!.sessionId,
         recordOffset: 0,
         forPending: true,
-        forAll: true);
+        // forAll: true
+        );
   }
 
-  Future<dynamic> _getSalesOrderData({bool button = false}) {
-    if (button) {
-      salesOrderProvider.clearOrderNumber();
-      salesOrderProvider.clearList();
-    }
-    return SalesOrderService.getSalesOrderView(
-        sessionId: userProvider.user!.sessionId,
-        recordOffset: 0,
-        forPending: true,
-        forAll: true);
-  }
+  // Future<dynamic> _getSalesOrderData({bool button = false}) {
+  //   if (button) {
+  //     salesOrderProvider.clearOrderNumber();
+  //     salesOrderProvider.clearList();
+  //   }
+  //   return SalesOrderService.getSalesOrderView(
+  //       sessionId: userProvider.user!.sessionId,
+  //       recordOffset: 0,
+  //       forPending: true,
+  //       forAll: true);
+  // }
 
-  Future<dynamic> _getSalesOrderItemsData({bool button = false}) {
-    if (button) {
-      salesOrderItemsProvider.clearItems(notify: false);
-    }
-    return SalesOrderService.getItemView(
-        sessionId: userProvider.user!.sessionId);
-  }
+  // Future<dynamic> _getSalesOrderItemsData({bool button = false}) {
+  //   if (button) {
+  //     salesOrderItemsProvider.clearItems(notify: false);
+  //   }
+  //   return SalesOrderService.getItemView(
+  //       sessionId: userProvider.user!.sessionId);
+  // }
 
   void webNotificationStream() {
     bool stream = false;
@@ -185,16 +188,18 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
       (event) {
         if (stream) {
           final data = event.data()!;
-          if (data['triggerStream'] == true) {
-            if (data['notifications'] != null) {
+          if (data['notifications'] != null) {
+            if (data['triggerStream'] == true) {
               webNotification(data: data);
               player.play('audio/notif_sound2.mp3',
                   isNotification: true, volume: 0.5);
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                notifProvider.setNotifications(data['notifications'],
-                    notify: true);
-              });
             }
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              notifProvider.setNotifications(data['notifications'],
+                  notify: true);
+              notifProvider.setSeen(notifProvider.notifications
+                  .any((notif) => notif['seen'] == false));
+            });
           }
         }
         stream = true;
@@ -204,7 +209,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
   }
 
   js.JsObject createNotification(String title, String body) {
-    showToastMessage(title);
+    showToastMessage('$title web');
     return js.JsObject(js.context['Notification'], [
       title,
       js.JsObject.jsify({'body': body})
@@ -237,8 +242,8 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
           futures = [
             _getPurchReqData(button: true),
             _getPurchOrderData(button: true),
-            _getSalesOrderData(button: true),
-            _getSalesOrderItemsData(button: true),
+            // _getSalesOrderData(button: true),
+            // _getSalesOrderItemsData(button: true),
           ];
         }
         //first for selected item in menu to update
@@ -360,7 +365,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
             'Sales Order',
             'Items',
             '(Hidden)',
-            if (userProvider.user!.username == 'admin') 'Admin'
+            if (userProvider.user!.username == 'admin') ' groups\n(hidden)'
           ],
           onMenuItemSelected: (index) {
             indexNotifier.value = index;
@@ -369,148 +374,171 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
           actions: [
             Consumer<NotificationProvider>(
               builder: (context, consumerNotifProvider, child) {
-                return PopupMenuButton(
-                  tooltip: "Open Notifications",
-                  onCanceled: () async {
-                    consumerNotifProvider.setSeen(true);
-                    for (final notification
-                        in consumerNotifProvider.notifications) {
-                      notification['seen'] = true;
-                    }
-                    await FirestoreService().create(
-                        collection: 'notifications',
-                        documentId: userProvider.user!.username,
-                        data: {
-                          'notifications': consumerNotifProvider.notifications,
-                          'triggerStream': false
-                        });
-                  },
-                  itemBuilder: (BuildContext context) {
-                    final ScrollController scrollController =
-                        ScrollController();
-                    return [
-                      PopupMenuItem(
-                        enabled: false,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 200),
-                          child: Scrollbar(
-                            controller: scrollController,
-                            thumbVisibility: true,
-                            child: SingleChildScrollView(
-                              controller: scrollController,
-                              child: Column(
-                                children: List.generate(
-                                  consumerNotifProvider.notifications.length,
-                                  (index) {
-                                    final notif = consumerNotifProvider
-                                        .notifications[index];
-                                    return Column(
-                                      children: [
-                                        ListTile(
-                                          title: Text(
-                                              notif['type'] == 'PR'
-                                                  ? 'New Purchase Request #${notif['preqNum']}'
-                                                  : notif['type'] == 'PO'
-                                                      ? 'New Purchase Order #${notif['poNum']}'
-                                                      : notif['body'],
-                                              style: const TextStyle(
-                                                  fontSize: 13)),
-                                          subtitle: Text(
-                                              formatTimestampMillis(
-                                                  notif['timestamp']),
-                                              style: const TextStyle(
-                                                  fontSize: 10)),
-                                          trailing: Text(
-                                            notif['seen'] == true
-                                                ? '    '
-                                                : 'New!',
-                                            style: const TextStyle(
-                                                color: Colors.red,
-                                                fontSize: 10),
-                                          ),
-                                        ),
-                                        const Divider(),
-                                      ],
-                                    );
-                                  },
-                                ).reversed.toList(),
+                return Stack(
+                  children: [
+                    const SizedBox(
+                      width: 55,
+                      height: kToolbarHeight,
+                    ),
+                    Positioned.fill(
+                        child: PopupMenuButton(
+                      tooltip: "Open Notifications",
+                      onCanceled: () async {
+                        if (!notifProvider.seen) {
+                          consumerNotifProvider.setSeen(true);
+                          for (final notification
+                              in consumerNotifProvider.notifications) {
+                            notification['seen'] = true;
+                            await FirestoreService().create(
+                                collection: 'notifications',
+                                documentId: userProvider.user!.username,
+                                data: {
+                                  'notifications':
+                                      consumerNotifProvider.notifications,
+                                  'triggerStream': false
+                                });
+                          }
+                        }
+                      },
+                      itemBuilder: (BuildContext context) {
+                        final ScrollController scrollController =
+                            ScrollController();
+                        if (consumerNotifProvider.notifications.isEmpty) {
+                          return [
+                            PopupMenuItem(
+                              enabled: false,
+                              child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxHeight: 200),
+                                  child: const Center(
+                                    child: Text('Empty'),
+                                  )),
+                            )
+                          ];
+                        } else {
+                          return [
+                            PopupMenuItem(
+                              enabled: false,
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxHeight: 200),
+                                child: Scrollbar(
+                                  controller: scrollController,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: scrollController,
+                                    child: Column(
+                                      children: List.generate(
+                                        consumerNotifProvider
+                                            .notifications.length,
+                                        (index) {
+                                          final notif = consumerNotifProvider
+                                              .notifications[index];
+                                          return Column(
+                                            children: [
+                                              ListTile(
+                                                title: Text(
+                                                    notif['type'] == 'PR'
+                                                        ? 'New Purchase Request #${notif['preqNum']}'
+                                                        : notif['type'] == 'PO'
+                                                            ? 'New Purchase Order #${notif['poNum']}'
+                                                            : notif['body'],
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                                subtitle: Text(
+                                                    formatTimestampMillis(
+                                                        notif['timestamp']),
+                                                    style: const TextStyle(
+                                                        fontSize: 10)),
+                                                trailing: Text(
+                                                  notif['seen'] == true
+                                                      ? '    '
+                                                      : 'New!',
+                                                  style: const TextStyle(
+                                                      color: Colors.red,
+                                                      fontSize: 10),
+                                                ),
+                                              ),
+                                              const Divider(),
+                                            ],
+                                          );
+                                        },
+                                      ).reversed.toList(),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ];
+                        }
+                      },
+                      icon: const Icon(Icons.notifications),
+                      offset: const Offset(0, 50),
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    )),
+                    Positioned(
+                      right: 5,
+                      top: 10,
+                      child: Visibility(
+                        visible: !consumerNotifProvider.seen,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: const BoxDecoration(
+                              shape: BoxShape.circle, color: Colors.red),
                         ),
                       ),
-                    ];
-                  },
-                  icon: Stack(
-                    children: [
-                      const Icon(Icons.notifications),
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Visibility(
-                          visible: !consumerNotifProvider.seen,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                                shape: BoxShape.circle, color: Colors.red),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  offset: const Offset(0, 50),
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ],
                 );
               },
             ),
             Stack(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white),
-                  onPressed: () {
-                    if (kIsWeb) {
+                const SizedBox(
+                  width: 55,
+                  height: kToolbarHeight,
+                ),
+                Positioned.fill(
+                  child: IconButton(
+                    tooltip: "Refresh",
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    onPressed: () {
                       showToastMessage('Refreshing data...');
-                    } else {
-                      if (mounted) {
-                        CustomToast.show(
-                            context: context,
-                            message: 'Refreshing data...',
-                            fromLogin: true);
-                      }
-                    }
-                    Provider.of<RefreshIconIndicatorProvider>(context,
-                            listen: false)
-                        .setShow(show: false);
-                    setState(() {
-                      refresh = true;
-                      //GET new data
-                      //it will refresh all the pages
-                      //because pages uses FutureBuilder = futures variable
-                      futures = [
-                        _getPurchReqData(button: true),
-                        _getPurchOrderData(button: true),
-                        _getSalesOrderData(button: true),
-                        _getSalesOrderItemsData(button: true),
-                      ];
-                    });
-                  },
+
+                      Provider.of<RefreshIconIndicatorProvider>(context,
+                              listen: false)
+                          .setShow(show: false);
+                      setState(() {
+                        refresh = true;
+                        //GET new data
+                        //it will refresh all the pages
+                        //because pages uses FutureBuilder = futures variable
+                        futures = [
+                          _getPurchReqData(button: true),
+                          _getPurchOrderData(button: true),
+                          // _getSalesOrderData(button: true),
+                          // _getSalesOrderItemsData(button: true),
+                        ];
+                      });
+                    },
+                  ),
                 ),
                 Positioned(
-                    right: 3,
-                    top: 4,
-                    child: Consumer<RefreshIconIndicatorProvider>(builder:
-                        (context, refreshIconIndicatorProvider, child) {
-                      return Visibility(
-                          visible: refreshIconIndicatorProvider.show,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                                shape: BoxShape.circle, color: Colors.red),
-                          ));
-                    }))
+                  right: 5,
+                  top: 10,
+                  child: Visibility(
+                    visible: refreshIconIndicatorProvider.show,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                          shape: BoxShape.circle, color: Colors.red),
+                    ),
+                  ),
+                ),
               ],
             ),
             Row(
@@ -685,58 +713,44 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                     }
 
                     // Sales Order
-                    bool salesOrderFlag = handleSessionExpiredException(
-                        snapshot.data![2], context);
-                    if (!salesOrderFlag) {
-                      final List<SalesOrder> data3 =
-                          snapshot.data![2]['salesOrders'];
-                      if (salesOrderProvider.salesOrderList.isEmpty) {
-                        salesOrderProvider.setList(
-                            salesOrderList: data3, notify: false);
-                      }
-                    } else {
-                      salesOrderProvider
-                          .setList(salesOrderList: [], notify: false);
-                    }
+                    // bool salesOrderFlag = handleSessionExpiredException(
+                    //     snapshot.data![2], context);
+                    // if (!salesOrderFlag) {
+                    //   final List<SalesOrder> data3 =
+                    //       snapshot.data![2]['salesOrders'];
+                    //   if (salesOrderProvider.salesOrderList.isEmpty) {
+                    //     salesOrderProvider.setList(
+                    //         salesOrderList: data3, notify: false);
+                    //   }
+                    // } else {
+                    //   salesOrderProvider
+                    //       .setList(salesOrderList: [], notify: false);
+                    // }
 
-                    // Sales Order Items
-                    bool salesOrderItemsFlag = handleSessionExpiredException(
-                        snapshot.data![3], context);
-                    if (!salesOrderItemsFlag) {
-                      final List<dynamic> data3 = snapshot.data![3]['items'];
-                      if (salesOrderItemsProvider.items.isEmpty) {
-                        salesOrderItemsProvider.addItems(
-                            items: data3, notify: false);
-                        salesOrderItemsProvider.setItemsHasMore(
-                            hasMore: snapshot.data![3]['hasMore'],
-                            notify: false);
-                      }
-                    } else {
-                      salesOrderItemsProvider
-                          .addItems(items: [], notify: false);
-                    }
+                    // // Sales Order Items
+                    // bool salesOrderItemsFlag = handleSessionExpiredException(
+                    //     snapshot.data![3], context);
+                    // if (!salesOrderItemsFlag) {
+                    //   final List<dynamic> data3 = snapshot.data![3]['items'];
+                    //   if (salesOrderItemsProvider.items.isEmpty) {
+                    //     salesOrderItemsProvider.addItems(
+                    //         items: data3, notify: false);
+                    //     salesOrderItemsProvider.setItemsHasMore(
+                    //         hasMore: snapshot.data![3]['hasMore'],
+                    //         notify: false);
+                    //   }
+                    // } else {
+                    //   salesOrderItemsProvider
+                    //       .addItems(items: [], notify: false);
+                    // }
 
                     //Notifications
                     if (notifProvider.notifications.isEmpty) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         notifProvider.setNotifications(
-                            snapshot.data![4]['notifications'],
+                            snapshot.data![2]['notifications'],
                             notify: true);
                       });
-                    }
-
-                    //put the item from notif in first
-                    if (purchReqProvider.reqNumber != -1 && refresh) {
-                      PurchaseRequest item = purchReqProvider
-                          .purchaseRequestList
-                          .firstWhere((item) =>
-                              item.preqNum == purchReqProvider.reqNumber);
-                      purchReqProvider.removeItem(
-                          purchReq: item, notify: false);
-                      purchReqProvider.insertItemtoFirst(
-                          item: item, notify: false);
-                      purchReqProvider.setReqNumber(reqNumber: -1);
-                      refresh = false;
                     }
                     return ValueListenableBuilder<int>(
                       valueListenable: indexNotifier,
@@ -755,7 +769,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                         //     ),
                         //   );
                         // } else {
-                        return IndexedStack(
+                        return LazyIndexedStack(
                           index: value,
                           children: [
                             const WebPurchReqMain(),

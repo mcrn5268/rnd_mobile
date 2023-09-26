@@ -71,4 +71,19 @@ class SharedPreferencesService {
     final int? requestNumber = prefs.getInt(_requestNumber);
     return {'type': type ?? '', 'requestNumber': requestNumber ?? -1};
   }
+
+  //for nonMobile and tokens
+  final String _nonMobileKey = 'nonMobile';
+  final String _tokensKey = 'tokens';
+
+  Future<void> saveNonMobile(bool nonMobile) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_nonMobileKey, nonMobile);
+  }
+
+  Future<bool> nonMobileExists() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey(_nonMobileKey);
+  }
+
 }

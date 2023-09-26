@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rnd_mobile/api/purchase_order_api.dart';
@@ -10,11 +12,14 @@ import 'package:rnd_mobile/providers/purchase_order/purchase_order_provider.dart
 import 'package:rnd_mobile/providers/refresh_icon_indicator_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
 import 'package:rnd_mobile/utilities/clear_data.dart';
+import 'package:rnd_mobile/utilities/date_only.dart';
+import 'package:rnd_mobile/utilities/date_text_formatter.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_purch_order_dialog.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_reusable_column.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 enum ApprovalStatus {
   approve,
@@ -41,14 +46,21 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
   OrderDataType _orderDataType = OrderDataType.poDate;
   final OrderStatus _orderStatus = OrderStatus.pending;
   OrderSort _orderSort = OrderSort.asc;
-
   final TextEditingController _orderFromController = TextEditingController();
   final TextEditingController _orderToController = TextEditingController();
   final TextEditingController _orderOtherController = TextEditingController();
-
-  DateTime? _orderStartDate;
-  DateTime? _orderEndDate;
   String? _orderDropdownValue;
+  late Brightness brightness;
+
+  //Date Picker
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
+  bool _showFromDate = false;
+  bool _showToDate = false;
+  DateTime _fromFocusedDay = DateTime.now();
+  DateTime _toFocusedDay = DateTime.now();
+  DateTime? _orderFromDate;
+  DateTime? _orderToDate;
+
   void sortPurchaseOrders(List<PurchaseOrder> purchaseOrders,
       OrderDataType dataType, OrderSort sort,
       {DateTime? startDate,
@@ -95,10 +107,12 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
         case OrderDataType.poDate:
           if (startDate != null || endDate != null) {
             purchaseOrders.retainWhere((order) {
-              if (startDate != null && order.poDate.isBefore(startDate)) {
+              if (startDate != null &&
+                  dateOnly(order.poDate).isBefore(dateOnly(startDate))) {
                 return false;
               }
-              if (endDate != null && order.poDate.isAfter(endDate)) {
+              if (endDate != null &&
+                  dateOnly(order.poDate).isAfter(dateOnly(endDate))) {
                 return false;
               }
               return true;
@@ -116,10 +130,12 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
         case OrderDataType.delvDate:
           if (startDate != null || endDate != null) {
             purchaseOrders.retainWhere((order) {
-              if (startDate != null && order.deliveryDate.isBefore(startDate)) {
+              if (startDate != null &&
+                  dateOnly(order.deliveryDate).isBefore(dateOnly(startDate))) {
                 return false;
               }
-              if (endDate != null && order.deliveryDate.isAfter(endDate)) {
+              if (endDate != null &&
+                  dateOnly(order.deliveryDate).isAfter(dateOnly(endDate))) {
                 return false;
               }
               return true;
@@ -132,26 +148,6 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
         default:
           break;
       }
-    }
-  }
-
-  Future<void> _selectDate(
-      BuildContext context, TextEditingController controller) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2015, 8),
-      lastDate: DateTime(2101),
-      initialEntryMode: DatePickerEntryMode.input,
-    );
-    if (picked != null) {
-      if (controller == _orderFromController) {
-        _orderStartDate = picked;
-      } else if (controller == _orderToController) {
-        _orderEndDate = picked;
-      }
-      final formattedDate = DateFormat('yyyy/MM/dd').format(picked);
-      controller.text = formattedDate;
     }
   }
 
@@ -193,6 +189,7 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
           sort: _orderSort,
           notify: false);
     }
+    brightness = PlatformDispatcher.instance.platformBrightness;
   }
 
   @override
@@ -241,7 +238,7 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                     builder: (context, filterProvider, _) {
                   List<PurchaseOrder> purchaseOrders = [];
                   if (purchaseListPending.isNotEmpty) {
-                    purchaseOrders = purchaseListPending;
+                    purchaseOrders = [...purchaseListPending];
                     sortPurchaseOrders(purchaseOrders, filterProvider.dataType!,
                         filterProvider.sort!,
                         startDate: filterProvider.fromDate,
@@ -363,11 +360,10 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                                         padding: const EdgeInsets.only(left: 3),
                                         child: Container(
                                           decoration: BoxDecoration(
-                                              color: MediaQuery.of(context)
-                                                          .platformBrightness ==
-                                                      Brightness.dark
-                                                  ? Colors.grey[900]
-                                                  : Colors.white,
+                                              color:
+                                                  brightness == Brightness.dark
+                                                      ? Colors.grey[900]
+                                                      : Colors.white,
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                               border: Border.all(
@@ -653,30 +649,70 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _orderFromController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[\d/]')),
+                                  DateTextFormatter()
+                                ],
                                 decoration: InputDecoration(
                                   labelText: 'From: ',
+                                  hintText: 'MM/DD/YYYY',
                                   labelStyle: const TextStyle(
                                       fontSize: 12, color: Colors.grey),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.close, size: 15),
-                                    onPressed: () {
-                                      if (_orderFromController
-                                          .text.isNotEmpty) {
-                                        setState(() {
-                                          _orderFromController.clear();
-                                          _orderStartDate = null;
-                                        });
-                                        this.setState(() {
-                                          _orderFromController.clear();
-                                          _orderStartDate = null;
-                                        });
-                                      }
-                                    },
+                                  suffixIcon: Visibility(
+                                    visible:
+                                        _orderFromController.text.isNotEmpty,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close, size: 15),
+                                      onPressed: () {
+                                        if (_orderFromController
+                                            .text.isNotEmpty) {
+                                          setState(() {
+                                            _orderFromController.clear();
+                                            _orderFromDate = null;
+                                          });
+                                          setState(() {
+                                            _orderFromController.clear();
+                                            _orderToDate = null;
+                                          });
+                                        }
+                                      },
+                                    ),
                                   ),
                                 ),
-                                readOnly: true,
-                                onTap: () =>
-                                    _selectDate(context, _orderFromController),
+                                onChanged: (String value) {
+                                  if (value.length == 10) {
+                                    final format = DateFormat('MM/dd/yyyy');
+                                    try {
+                                      final date = format.parseStrict(value);
+                                      if (date.year >= 2010 &&
+                                          date.year <= 2050) {
+                                        _orderFromDate = date;
+                                        _fromFocusedDay = date;
+                                        _showFromDate = false;
+                                      } else {
+                                        // The entered date is not within the valid range
+                                        _orderFromDate = null;
+                                        _fromFocusedDay = DateTime.now();
+                                        showToastMessage(
+                                            'Entered date is not within the valid range');
+                                      }
+                                    } catch (e) {
+                                      // The entered date is not valid
+                                      _orderFromDate = null;
+                                      _fromFocusedDay = DateTime.now();
+                                      showToastMessage(
+                                          'Entered date is not valid');
+                                    }
+                                    setState(() {});
+                                  }
+                                },
+                                onTap: () {
+                                  setState(() {
+                                    _showFromDate = true;
+                                  });
+                                },
                                 style: const TextStyle(
                                     fontSize: 12, color: Colors.grey),
                               ),
@@ -685,27 +721,67 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _orderToController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[\d/]')),
+                                  DateTextFormatter()
+                                ],
                                 decoration: InputDecoration(
                                   labelText: 'To: ',
+                                  hintText: 'MM/DD/YYYY',
                                   labelStyle: const TextStyle(
                                     fontSize: 12,
                                   ),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.close, size: 15),
-                                    color: Colors.grey,
-                                    onPressed: () {
-                                      if (_orderToController.text.isNotEmpty) {
-                                        setState(() {
-                                          _orderToController.clear();
-                                          _orderEndDate = null;
-                                        });
-                                      }
-                                    },
+                                  suffixIcon: Visibility(
+                                    visible: _orderToController.text.isNotEmpty,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close, size: 15),
+                                      color: Colors.grey,
+                                      onPressed: () {
+                                        if (_orderToController
+                                            .text.isNotEmpty) {
+                                          setState(() {
+                                            _orderToController.clear();
+                                            _orderToDate = null;
+                                          });
+                                        }
+                                      },
+                                    ),
                                   ),
                                 ),
-                                readOnly: true,
-                                onTap: () =>
-                                    _selectDate(context, _orderToController),
+                                onChanged: (String value) {
+                                  if (value.length == 10) {
+                                    final format = DateFormat('MM/dd/yyyy');
+                                    try {
+                                      final date = format.parseStrict(value);
+                                      if (date.year >= 2010 &&
+                                          date.year <= 2050) {
+                                        _orderToDate = date;
+                                        _toFocusedDay = date;
+                                        _showToDate = false;
+                                      } else {
+                                        // The entered date is not within the valid range
+                                        _orderToDate = null;
+                                        _toFocusedDay = DateTime.now();
+                                        showToastMessage(
+                                            'Entered date is not within the valid range');
+                                      }
+                                    } catch (e) {
+                                      // The entered date is not valid
+                                      _orderToDate = null;
+                                      _toFocusedDay = DateTime.now();
+                                      showToastMessage(
+                                          'Entered date is not valid');
+                                    }
+                                    setState(() {});
+                                  }
+                                },
+                                onTap: () {
+                                  setState(() {
+                                    _showToDate = true;
+                                  });
+                                },
                                 style: const TextStyle(
                                     fontSize: 12, color: Colors.grey),
                               ),
@@ -715,6 +791,121 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    Stack(
+                      children: [
+                        if (_showFromDate) ...[
+                          Container(
+                            color: Colors.black,
+                            height: 425,
+                            width: 275,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    const Text('From Date'),
+                                    const Spacer(),
+                                    InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _showFromDate = false;
+                                          });
+                                        },
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: Colors.red,
+                                        ))
+                                  ],
+                                ),
+                                TableCalendar(
+                                  firstDay: DateTime.utc(2010, 10, 16),
+                                  lastDay: DateTime.utc(2050, 3, 14),
+                                  focusedDay: _fromFocusedDay,
+                                  calendarFormat: _calendarFormat,
+                                  availableCalendarFormats: const {
+                                    CalendarFormat.month: 'Month',
+                                  },
+                                  selectedDayPredicate: (day) =>
+                                      isSameDay(_orderFromDate, day),
+                                  onDaySelected: (selectedDay, focusedDay) {
+                                    setState(() {
+                                      _orderFromDate = selectedDay;
+                                      _fromFocusedDay = focusedDay;
+                                      _orderFromController.text =
+                                          DateFormat('MM/dd/yyyy')
+                                              .format(_orderFromDate!);
+                                      _showFromDate = false;
+                                    });
+                                  },
+                                  onPageChanged: (focusedDay) {
+                                    _fromFocusedDay = focusedDay;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if (_showToDate) ...[
+                          Container(
+                            color: Colors.black,
+                            height: 425,
+                            width: 275,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    const Text('To Date'),
+                                    const Spacer(),
+                                    InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _showToDate = false;
+                                          });
+                                        },
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: Colors.red,
+                                        ))
+                                  ],
+                                ),
+                                TableCalendar(
+                                  firstDay: DateTime.utc(2010, 10, 16),
+                                  lastDay: DateTime.utc(2050, 3, 14),
+                                  focusedDay: _toFocusedDay,
+                                  calendarFormat: _calendarFormat,
+                                  availableCalendarFormats: const {
+                                    CalendarFormat.month: 'Month',
+                                  },
+                                  selectedDayPredicate: (day) =>
+                                      isSameDay(_orderToDate, day),
+                                  onDaySelected: (selectedDay, focusedDay) {
+                                    setState(() {
+                                      _orderToDate = selectedDay;
+                                      _toFocusedDay = focusedDay;
+                                      _orderToController.text =
+                                          DateFormat('MM/dd/yyyy')
+                                              .format(_orderToDate!);
+                                      _showToDate = false;
+                                    });
+                                  },
+                                  onPageChanged: (focusedDay) {
+                                    _toFocusedDay = focusedDay;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const Divider(),
                     Visibility(
                       visible: _orderDataType != OrderDataType.other,
                       child: Column(
@@ -789,8 +980,8 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                                   dataType: _orderDataType,
                                   status: _orderStatus,
                                   sort: _orderSort,
-                                  fromDate: _orderStartDate,
-                                  toDate: _orderEndDate,
+                                  fromDate: _orderFromDate,
+                                  toDate: _orderToDate,
                                   otherDropdown: _orderDropdownValue,
                                   otherValue: _orderOtherController.text);
                             },

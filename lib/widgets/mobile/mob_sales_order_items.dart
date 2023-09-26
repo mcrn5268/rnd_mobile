@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_reusable_column.dart';
 
@@ -52,7 +53,7 @@ Widget mobileSalesOrderItems(
                     padding: const EdgeInsets.only(left: 3),
                     child: Container(
                       decoration: BoxDecoration(
-                          color: MediaQuery.of(context).platformBrightness ==
+                          color: PlatformDispatcher.instance.platformBrightness ==
                                   Brightness.dark
                               ? Colors.grey[900]
                               : Colors.white,
@@ -88,7 +89,8 @@ Widget mobileSalesOrderItems(
                                 : salesOrderItem[4] == 'N'
                                     ? Colors.red
                                     : Colors.grey,
-                            clickable: clickable),
+                            clickable: clickable,
+                            fromItems: true,),
                       ),
                     ),
                   ),

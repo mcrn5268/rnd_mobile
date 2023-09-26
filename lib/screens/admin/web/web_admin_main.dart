@@ -62,7 +62,7 @@ class _WebAdminState extends State<WebAdmin> {
                                     'ADD USERNAME TO A GROUP',
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 30),
+                                        fontSize: 15),
                                   ),
                                   const SizedBox(
                                     height: 15,
@@ -295,7 +295,7 @@ class _WebAdminState extends State<WebAdmin> {
                                     'REMOVE USERNAME FROM A GROUP',
                                     style: TextStyle(
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 30),
+                                        fontSize: 15),
                                   ),
                                   const SizedBox(
                                     height: 15,

@@ -11,7 +11,6 @@ import 'package:rnd_mobile/models/top_model.dart';
 import 'package:rnd_mobile/models/warehouse_model.dart';
 import 'package:rnd_mobile/providers/items/items_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
-import 'package:rnd_mobile/utilities/date_string_formatter.dart';
 import 'package:rnd_mobile/utilities/date_text_formatter.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
@@ -2377,28 +2376,25 @@ class _WebSalesCreateOrderScreenState extends State<WebSalesCreateOrderScreen> {
               ? _referenceController.text
               : null;
 
-          String? soDate = _salesOrderDate?.toIso8601String();
+          String? soDate = _salesOrderDate?.toLocal().toIso8601String();
+          print('soDate: $soDate');
           if (soDate == null) {
             // showToast('Sales Order Date is empty');
             proceed = false;
             _salesOrderDateErrorText = _salesOrderDateNotValid
                 ? 'Sales Order Date is not valid'
                 : 'Sales Order Date is empty';
-          } else {
-            soDate = formatTimestamp(soDate);
-            print('soDate: $soDate');
           }
 
-          String? deliveryDate = _salesOrderDelvDate?.toIso8601String();
+          String? deliveryDate =
+              _salesOrderDelvDate?.toLocal().toIso8601String();
+          print('deliveryDate: $deliveryDate');
           if (deliveryDate == null) {
             // showToast('Delivery Date is empty');
             proceed = false;
             _salesOrderDelvDateErrorText = _salesOrderDelvDateNotValid
                 ? 'Delivery Date is not valid'
                 : 'Delivery Date is empty';
-          } else {
-            deliveryDate = formatTimestamp(deliveryDate);
-            print('soDdeliveryDateate: $deliveryDate');
           }
           // final debtorID = double.parse(_selectedDebtor[0].toString());
           // final whsID = double.parse(_selectedWarehouse[0].toString());

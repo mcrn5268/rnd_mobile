@@ -11,7 +11,6 @@ import 'package:rnd_mobile/models/top_model.dart';
 import 'package:rnd_mobile/models/warehouse_model.dart';
 import 'package:rnd_mobile/providers/items/items_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
-import 'package:rnd_mobile/utilities/date_string_formatter.dart';
 import 'package:rnd_mobile/utilities/date_text_formatter.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_sales_order_items.dart';
@@ -115,6 +114,7 @@ class _MobileSalesCreateOrderScreenState
   String? _salesRepErrorText;
   bool _salesOrderDateNotValid = false;
   bool _salesOrderDelvDateNotValid = false;
+  late Brightness brightness;
 
   //for date picker
   CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -142,6 +142,7 @@ class _MobileSalesCreateOrderScreenState
     itemsHasMore = salesOrderItemsProvider.hasMore;
     _itemIsActive.add(true);
     addItem();
+    brightness = PlatformDispatcher.instance.platformBrightness;
   }
 
   @override
@@ -259,9 +260,7 @@ class _MobileSalesCreateOrderScreenState
           ),
           filled: true,
           fillColor:
-              MediaQuery.of(context).platformBrightness == Brightness.dark
-                  ? Colors.grey[900]
-                  : Colors.white,
+              brightness == Brightness.dark ? Colors.grey[900] : Colors.white,
           suffixIcon: Visibility(
             visible: _referenceController.text.isNotEmpty,
             child: IconButton(
@@ -315,9 +314,7 @@ class _MobileSalesCreateOrderScreenState
             errorText: _salesOrderDateErrorText,
             filled: true,
             fillColor:
-                MediaQuery.of(context).platformBrightness == Brightness.dark
-                    ? Colors.grey[900]
-                    : Colors.white,
+                brightness == Brightness.dark ? Colors.grey[900] : Colors.white,
             suffixIcon: Visibility(
               visible: _salesOrderDateController.text.isNotEmpty,
               child: IconButton(
@@ -337,8 +334,10 @@ class _MobileSalesCreateOrderScreenState
             if (value.length == 10) {
               final format = DateFormat('MM/dd/yyyy');
               try {
+                print('value: $value');
                 final date = format.parseStrict(value);
                 if (date.year >= 2010 && date.year <= 2050) {
+                  print('date: $date');
                   _salesOrderDate = date;
                   _salesOrderfocusedDay = date;
                   _showOverlaySalesOrderDate = false;
@@ -403,9 +402,7 @@ class _MobileSalesCreateOrderScreenState
             errorText: _salesOrderDelvDateErrorText,
             filled: true,
             fillColor:
-                MediaQuery.of(context).platformBrightness == Brightness.dark
-                    ? Colors.grey[900]
-                    : Colors.white,
+                brightness == Brightness.dark ? Colors.grey[900] : Colors.white,
             suffixIcon: Visibility(
               visible: _deliveryDateController.text.isNotEmpty,
               child: IconButton(
@@ -473,9 +470,7 @@ class _MobileSalesCreateOrderScreenState
           ),
           filled: true,
           fillColor:
-              MediaQuery.of(context).platformBrightness == Brightness.dark
-                  ? Colors.grey[900]
-                  : Colors.white,
+              brightness == Brightness.dark ? Colors.grey[900] : Colors.white,
           suffixIcon: Visibility(
             visible: _particularsController.text.isNotEmpty,
             child: IconButton(
@@ -604,8 +599,7 @@ class _MobileSalesCreateOrderScreenState
                   ),
                   errorText: _debtorErrorText,
                   filled: true,
-                  fillColor: MediaQuery.of(context).platformBrightness ==
-                          Brightness.dark
+                  fillColor: brightness == Brightness.dark
                       ? Colors.grey[900]
                       : Colors.white,
                   suffixIcon: Visibility(
@@ -880,8 +874,7 @@ class _MobileSalesCreateOrderScreenState
                   ),
                   errorText: _warehouseErrorText,
                   filled: true,
-                  fillColor: MediaQuery.of(context).platformBrightness ==
-                          Brightness.dark
+                  fillColor: brightness == Brightness.dark
                       ? Colors.grey[900]
                       : Colors.white,
                   suffixIcon: Visibility(
@@ -1158,8 +1151,7 @@ class _MobileSalesCreateOrderScreenState
                   ),
                   errorText: _topErrorText,
                   filled: true,
-                  fillColor: MediaQuery.of(context).platformBrightness ==
-                          Brightness.dark
+                  fillColor: brightness == Brightness.dark
                       ? Colors.grey[900]
                       : Colors.white,
                   suffixIcon: Visibility(
@@ -1430,8 +1422,7 @@ class _MobileSalesCreateOrderScreenState
                   ),
                   errorText: _salesRepErrorText,
                   filled: true,
-                  fillColor: MediaQuery.of(context).platformBrightness ==
-                          Brightness.dark
+                  fillColor: brightness == Brightness.dark
                       ? Colors.grey[900]
                       : Colors.white,
                   suffixIcon: Visibility(
@@ -1649,11 +1640,9 @@ class _MobileSalesCreateOrderScreenState
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               filled: true,
-                              fillColor:
-                                  MediaQuery.of(context).platformBrightness ==
-                                          Brightness.dark
-                                      ? Colors.grey[900]
-                                      : Colors.white,
+                              fillColor: brightness == Brightness.dark
+                                  ? Colors.grey[900]
+                                  : Colors.white,
                               suffixIcon: Visibility(
                                 visible: _itemsLineNumberControllerList[index]
                                     .text
@@ -1728,11 +1717,9 @@ class _MobileSalesCreateOrderScreenState
                                 errorText: _itemsErrorText[index],
                                 errorStyle: const TextStyle(color: Colors.red),
                                 filled: true,
-                                fillColor:
-                                    MediaQuery.of(context).platformBrightness ==
-                                            Brightness.dark
-                                        ? Colors.grey[900]
-                                        : Colors.white,
+                                fillColor: brightness == Brightness.dark
+                                    ? Colors.grey[900]
+                                    : Colors.white,
                               ),
                             ),
                             StatefulBuilder(builder:
@@ -1945,11 +1932,9 @@ class _MobileSalesCreateOrderScreenState
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               filled: true,
-                              fillColor:
-                                  MediaQuery.of(context).platformBrightness ==
-                                          Brightness.dark
-                                      ? Colors.grey[900]
-                                      : Colors.white,
+                              fillColor: brightness == Brightness.dark
+                                  ? Colors.grey[900]
+                                  : Colors.white,
                             ),
                           ),
                         ),
@@ -1986,11 +1971,9 @@ class _MobileSalesCreateOrderScreenState
                                 errorText: _itemQtyErrorText[index],
                                 errorStyle: const TextStyle(color: Colors.red),
                                 filled: true,
-                                fillColor:
-                                    MediaQuery.of(context).platformBrightness ==
-                                            Brightness.dark
-                                        ? Colors.grey[900]
-                                        : Colors.white,
+                                fillColor: brightness == Brightness.dark
+                                    ? Colors.grey[900]
+                                    : Colors.white,
                                 suffixIcon: Visibility(
                                   visible: _itemsQuantityControllerList[index]
                                       .text
@@ -2060,11 +2043,9 @@ class _MobileSalesCreateOrderScreenState
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
                                 filled: true,
-                                fillColor:
-                                    MediaQuery.of(context).platformBrightness ==
-                                            Brightness.dark
-                                        ? Colors.grey[900]
-                                        : Colors.white,
+                                fillColor: brightness == Brightness.dark
+                                    ? Colors.grey[900]
+                                    : Colors.white,
                                 suffixIcon: Visibility(
                                   visible: _conversionFactorController
                                       .text.isNotEmpty,
@@ -2128,11 +2109,9 @@ class _MobileSalesCreateOrderScreenState
                                     _itemBaseSellingPriceErrorText[index],
                                 errorStyle: const TextStyle(color: Colors.red),
                                 filled: true,
-                                fillColor:
-                                    MediaQuery.of(context).platformBrightness ==
-                                            Brightness.dark
-                                        ? Colors.grey[900]
-                                        : Colors.white,
+                                fillColor: brightness == Brightness.dark
+                                    ? Colors.grey[900]
+                                    : Colors.white,
                                 suffixIcon: Visibility(
                                   visible: _itemsPriceControllerList[index]
                                       .text
@@ -2210,18 +2189,15 @@ class _MobileSalesCreateOrderScreenState
           Text(
             'Add Item',
             style: TextStyle(
-                color:
-                    MediaQuery.of(context).platformBrightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black),
+                color: brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black),
           ),
           const SizedBox(height: 0.3),
           Container(
             height: 1,
             width: 70,
-            color: MediaQuery.of(context).platformBrightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
+            color: brightness == Brightness.dark ? Colors.white : Colors.black,
           ),
         ],
       ),
@@ -2246,28 +2222,22 @@ class _MobileSalesCreateOrderScreenState
               ? _referenceController.text
               : null;
 
-          String? soDate = _salesOrderDate?.toIso8601String();
+          String? soDate = _salesOrderDate?.toLocal().toIso8601String();
           if (soDate == null) {
             // showToast('Sales Order Date is empty');
             proceed = false;
             _salesOrderDateErrorText = _salesOrderDateNotValid
                 ? 'Sales Order Date is not valid'
                 : 'Sales Order Date is empty';
-          } else {
-            soDate = formatTimestamp(soDate);
-            print('soDate: $soDate');
           }
 
-          String? deliveryDate = _salesOrderDelvDate?.toIso8601String();
+          String? deliveryDate = _salesOrderDelvDate?.toLocal().toIso8601String();
           if (deliveryDate == null) {
             // showToast('Delivery Date is empty');
             proceed = false;
             _salesOrderDelvDateErrorText = _salesOrderDelvDateNotValid
                 ? 'Delivery Date is not valid'
                 : 'Delivery Date is empty';
-          } else {
-            deliveryDate = formatTimestamp(deliveryDate);
-            print('soDdeliveryDateate: $deliveryDate');
           }
           // final debtorID = double.parse(_selectedDebtor[0].toString());
           // final whsID = double.parse(_selectedWarehouse[0].toString());
@@ -2464,14 +2434,10 @@ class _MobileSalesCreateOrderScreenState
         offset: const Offset(-130.0, 60.0),
         child: Container(
           decoration: BoxDecoration(
-            color: MediaQuery.of(context).platformBrightness == Brightness.dark
-                ? Colors.black
-                : Colors.white,
+            color: brightness == Brightness.dark ? Colors.black : Colors.white,
             border: Border.all(
               color:
-                  MediaQuery.of(context).platformBrightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
+                  brightness == Brightness.dark ? Colors.white : Colors.black,
               width: 1,
             ),
           ),
@@ -2522,14 +2488,10 @@ class _MobileSalesCreateOrderScreenState
         offset: const Offset(0.0, 60.0),
         child: Container(
           decoration: BoxDecoration(
-            color: MediaQuery.of(context).platformBrightness == Brightness.dark
-                ? Colors.black
-                : Colors.white,
+            color: brightness == Brightness.dark ? Colors.black : Colors.white,
             border: Border.all(
               color:
-                  MediaQuery.of(context).platformBrightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
+                  brightness == Brightness.dark ? Colors.white : Colors.black,
               width: 1,
             ),
           ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rnd_mobile/providers/sales_order/sales_order_provider.dart';
@@ -16,6 +17,13 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
   final TextEditingController _searchController = TextEditingController();
   final List<String> menuItems = ['Create', 'History'];
   int selectedIndex = 0;
+  late Brightness brightness;
+
+  @override
+  void initState() {
+    super.initState();
+    brightness = PlatformDispatcher.instance.platformBrightness;
+  }
 
   @override
   void dispose() {
@@ -152,7 +160,9 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
                           fontSize: 12,
                           color: index == selectedIndex
                               // ? const Color(0xFF795FCD)
-                              ? MediaQuery.of(context).platformBrightness == Brightness.dark?Colors.white:Colors.blueGrey
+                              ? brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.blueGrey
                               : Colors.grey,
                         ),
                       ),

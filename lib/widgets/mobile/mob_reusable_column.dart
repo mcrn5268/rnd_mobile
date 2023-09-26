@@ -15,24 +15,26 @@ class MobileReusableColumn extends StatelessWidget {
   final void Function()? onApprovePressed;
   final void Function()? onCancelPressed;
   final void Function()? onConfirmPressed;
+  final bool? fromItems;
 
-  const MobileReusableColumn({
-    Key? key,
-    required this.firstRowFirstText,
-    required this.firstRowSecondText,
-    required this.secondRowFirstText,
-    required this.thirdRowFirstText,
-    required this.thirdRowSecondText,
-    required this.fourthRowFirstText,
-    required this.fourthRowSecondText,
-    required this.statusColor,
-    this.clickable,
-    this.confCanc,
-    this.onDenyPressed,
-    this.onApprovePressed,
-    this.onCancelPressed,
-    this.onConfirmPressed,
-  }) : super(key: key);
+  const MobileReusableColumn(
+      {Key? key,
+      required this.firstRowFirstText,
+      required this.firstRowSecondText,
+      required this.secondRowFirstText,
+      required this.thirdRowFirstText,
+      required this.thirdRowSecondText,
+      required this.fourthRowFirstText,
+      required this.fourthRowSecondText,
+      required this.statusColor,
+      this.clickable,
+      this.confCanc,
+      this.onDenyPressed,
+      this.onApprovePressed,
+      this.onCancelPressed,
+      this.onConfirmPressed,
+      this.fromItems})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -91,12 +93,18 @@ class MobileReusableColumn extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text(thirdRowFirstText,
+                    Text(
+                        fromItems == true
+                            ? 'Group: $thirdRowFirstText'
+                            : 'Description: $thirdRowFirstText',
                         textAlign: TextAlign.left,
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                     const SizedBox(height: 5),
-                    Text('Request Date: $fourthRowFirstText',
+                    Text(
+                        fromItems == true
+                            ? 'Unit: $fourthRowFirstText'
+                            : 'Request Date: $fourthRowFirstText',
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                   ])),
@@ -105,17 +113,26 @@ class MobileReusableColumn extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text(thirdRowSecondText,
+                    Text(
+                        fromItems == true
+                            ? 'Cost Method: $thirdRowSecondText'
+                            : 'Reference: $thirdRowSecondText',
                         textAlign: TextAlign.left,
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                     const SizedBox(height: 5),
-                    Text('Needed Date: $fourthRowSecondText',
+                    Text(
+                        fromItems == true
+                            ? 'Selling Price: $fourthRowSecondText'
+                            : 'Needed Date: $fourthRowSecondText',
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                   ])),
             ],
           ),
+        ),
+        const SizedBox(
+          height: 15,
         ),
         if (confCanc != null) ...[
           Stack(

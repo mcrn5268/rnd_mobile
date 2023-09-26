@@ -53,6 +53,10 @@ Widget webSalesOrderItems(
                   offset: const Offset(0, 1),
                 ),
               ],
+              border: Border.all(
+                color: Colors.grey,
+                width: 0.5,
+              ),
             ),
             child: MouseRegion(
               cursor: clickable ? SystemMouseCursors.click : MouseCursor.defer,

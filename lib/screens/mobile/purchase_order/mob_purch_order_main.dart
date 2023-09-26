@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purchase_order_provider.dart';
@@ -16,6 +17,13 @@ class _MobilePurchOrderMainState extends State<MobilePurchOrderMain> {
   final TextEditingController _searchController = TextEditingController();
   final List<String> menuItems = ['Order', 'History'];
   int selectedIndex = 0;
+  late Brightness brightness;
+
+  @override
+  void initState() {
+    super.initState();
+    brightness = PlatformDispatcher.instance.platformBrightness;
+  }
 
   @override
   void dispose() {
@@ -143,7 +151,7 @@ class _MobilePurchOrderMainState extends State<MobilePurchOrderMain> {
                           fontSize: 12,
                           color: index == selectedIndex
                               // ? const Color(0xFF795FCD)
-                              ? MediaQuery.of(context).platformBrightness ==
+                              ? brightness ==
                                       Brightness.dark
                                   ? Colors.white
                                   : Colors.blueGrey

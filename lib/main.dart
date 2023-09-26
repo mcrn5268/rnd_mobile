@@ -1,4 +1,4 @@
-import 'package:oktoast/oktoast.dart';
+ import 'package:oktoast/oktoast.dart';
 import 'package:rnd_mobile/providers/notifications_provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purch_order_filter_provider.dart';
 import 'package:rnd_mobile/providers/purchase_request/purch_req_hist_filter_provider.dart';
@@ -237,15 +237,20 @@ class MyApp extends StatelessWidget {
         ),
         home: Consumer<UserProvider>(
           builder: (context, userProvider, _) {
-            return FutureBuilder<Map<String, String>>(
-                //get user from sharedpreferences to reuse sessionId
-                future: SharedPreferencesService().getUser(),
+            return FutureBuilder<List<dynamic>>(
+                future: Future.wait([
+                  SharedPreferencesService().getUser(),
+                  SharedPreferencesService().nonMobileExists(),
+                  SharedPreferencesService().tokenExists()
+                ]),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
                   } else {
                     if (snapshot.hasData) {
-                      final data = snapshot.data!;
+                      final data = snapshot.data![0] as Map<String, String>;
+                      final nonMobileExists = snapshot.data![1];
+                      final tokenExists = snapshot.data![2];
                       if (data['username'] != '' && data['sessionId'] != '') {
                         final user = UserModel(
                             username: data['username']!,
@@ -258,38 +263,43 @@ class MyApp extends StatelessWidget {
                       } else {
                         // User is logged in
                         if (!Platform.isAndroid && !Platform.isIOS) {
-                          if (kIsWeb) {
-                            //web uses firebase firestore
-                            FirestoreService().create(
-                                collection: 'tokens',
-                                documentId: userProvider.user!.username,
-                                data: {'nonMobile': true});
-                          } else {
-                            //desktop uses firedart
-                            Firestore.instance
-                                .collection("tokens")
-                                .document(userProvider.user!.username)
-                                .set({'nonMobile': true}, merge: true);
+                          if (!nonMobileExists) {
+                            SharedPreferencesService().saveNonMobile(true);
+                            if (kIsWeb) {
+                              //web uses firebase firestore
+                              FirestoreService().create(
+                                  collection: 'tokens',
+                                  documentId: userProvider.user!.username,
+                                  data: {'nonMobile': true});
+                            } else {
+                              //desktop uses firedart
+                              Firestore.instance
+                                  .collection("tokens")
+                                  .document(userProvider.user!.username)
+                                  .set({'nonMobile': true}, merge: true);
+                            }
                           }
                         }
                         //--------------------MOBILE---------------------
 
                         else {
-                          if (token != null) {
-                            SharedPreferencesService().saveToken(token!);
-                            FirestoreService().create(
-                                collection: 'tokens',
-                                documentId: userProvider.user!.username,
-                                data: token,
-                                forDeviceToken: true);
+                          if (!tokenExists) {
+                            if (token != null) {
+                              SharedPreferencesService().saveToken(token!);
+                              FirestoreService().create(
+                                  collection: 'tokens',
+                                  documentId: userProvider.user!.username,
+                                  data: token,
+                                  forDeviceToken: true);
+                            }
                           }
                         }
                         //web
-                        // if (MediaQuery.of(context).size.width < 600) {
-                        //   return const MobileHome();
-                        // } else {
-                        return const WebHome();
-                        // }
+                        if (MediaQuery.of(context).size.width < 600) {
+                          return const MobileHome();
+                        } else {
+                          return const WebHome();
+                        }
 
                         //mobile
                         // return const MobileHome();

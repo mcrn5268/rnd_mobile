@@ -119,7 +119,7 @@ class _WebPurchOrderMainState extends State<WebPurchOrderMain> {
                                       .toString(),
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 12,
+                                    fontSize: 10,
                                   ),
                                 ),
                               ),
