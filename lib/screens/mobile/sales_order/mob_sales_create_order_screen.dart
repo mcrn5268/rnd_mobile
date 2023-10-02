@@ -13,6 +13,7 @@ import 'package:rnd_mobile/providers/items/items_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
 import 'package:rnd_mobile/utilities/date_text_formatter.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
+import 'package:rnd_mobile/widgets/alert_dialog.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_sales_order_items.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
@@ -501,7 +502,7 @@ class _MobileSalesCreateOrderScreenState
               List<dynamic> resultDebtors = result['debtors'];
               _debtors = resultDebtors
                   .map((debtorList) => Debtor(
-                        debtorId: debtorList[0],
+                        debtorId: debtorList[0].toDouble(),
                         debtorCode: debtorList[1].toString(),
                         debtorName: debtorList[2].toString(),
                       ))
@@ -540,7 +541,7 @@ class _MobileSalesCreateOrderScreenState
                   List<dynamic> resultDebtors = search['debtors'];
                   List<Debtor> searchResult = resultDebtors
                       .map((debtorList) => Debtor(
-                            debtorId: debtorList[0],
+                            debtorId: debtorList[0].toDouble(),
                             debtorCode: debtorList[1].toString(),
                             debtorName: debtorList[2].toString(),
                           ))
@@ -675,7 +676,8 @@ class _MobileSalesCreateOrderScreenState
                                                 resultDebtors
                                                     .map((debtorList) => Debtor(
                                                           debtorId:
-                                                              debtorList[0],
+                                                              debtorList[0]
+                                                                  .toDouble(),
                                                           debtorCode:
                                                               debtorList[1]
                                                                   .toString(),
@@ -776,7 +778,7 @@ class _MobileSalesCreateOrderScreenState
               List<dynamic> resultWarehouse = result['warehouse'];
               _warehouse = resultWarehouse
                   .map((warehouseList) => Warehouse(
-                        whsId: warehouseList[0],
+                        whsId: warehouseList[0].toDouble(),
                         whsCode: warehouseList[1].toString(),
                         whsDesc: warehouseList[2].toString(),
                       ))
@@ -815,7 +817,7 @@ class _MobileSalesCreateOrderScreenState
                   List<dynamic> resultWarehouse = search['warehouse'];
                   List<Warehouse> searchResult = resultWarehouse
                       .map((warehouseList) => Warehouse(
-                            whsId: warehouseList[0],
+                            whsId: warehouseList[0].toDouble(),
                             whsCode: warehouseList[1].toString(),
                             whsDesc: warehouseList[2].toString(),
                           ))
@@ -952,7 +954,8 @@ class _MobileSalesCreateOrderScreenState
                                                     .map((warehouseList) =>
                                                         Warehouse(
                                                           whsId:
-                                                              warehouseList[0],
+                                                              warehouseList[0]
+                                                                  .toDouble(),
                                                           whsCode:
                                                               warehouseList[1]
                                                                   .toString(),
@@ -1054,7 +1057,7 @@ class _MobileSalesCreateOrderScreenState
               List<dynamic> resultTOP = result['tops'];
               _tops = resultTOP
                   .map((topList) => TermsOfPayment(
-                        topId: topList[0],
+                        topId: topList[0].toDouble(),
                         topCode: topList[1].toString(),
                         topDesc: topList[2].toString(),
                       ))
@@ -1093,7 +1096,7 @@ class _MobileSalesCreateOrderScreenState
                   List<dynamic> resultTOP = search['tops'];
                   List<TermsOfPayment> searchResult = resultTOP
                       .map((topsList) => TermsOfPayment(
-                            topId: topsList[0],
+                            topId: topsList[0].toDouble(),
                             topCode: topsList[1].toString(),
                             topDesc: topsList[2].toString(),
                           ))
@@ -1226,7 +1229,8 @@ class _MobileSalesCreateOrderScreenState
                                                 resultTOP
                                                     .map((topsList) =>
                                                         TermsOfPayment(
-                                                          topId: topsList[0],
+                                                          topId: topsList[0]
+                                                              .toDouble(),
                                                           topCode: topsList[1]
                                                               .toString(),
                                                           topDesc: topsList[2]
@@ -1323,7 +1327,7 @@ class _MobileSalesCreateOrderScreenState
               List<dynamic> resultSalesRep = result['salesReps'];
               _salesReps = resultSalesRep
                   .map((salesRepsList) => SalesRep(
-                        salesRepId: salesRepsList[0],
+                        salesRepId: salesRepsList[0].toDouble(),
                         salesRepCode: salesRepsList[1].toString(),
                         salesRepName: salesRepsList[2].toString(),
                       ))
@@ -1363,7 +1367,7 @@ class _MobileSalesCreateOrderScreenState
                   print('resultSalesRep: $resultSalesRep');
                   List<SalesRep> searchResult = resultSalesRep
                       .map((salesRepsList) => SalesRep(
-                            salesRepId: salesRepsList[0],
+                            salesRepId: salesRepsList[0].toDouble(),
                             salesRepCode: salesRepsList[1].toString(),
                             salesRepName: salesRepsList[2].toString(),
                           ))
@@ -1500,7 +1504,8 @@ class _MobileSalesCreateOrderScreenState
                                                     .map((salesRepsList) =>
                                                         SalesRep(
                                                           salesRepId:
-                                                              salesRepsList[0],
+                                                              salesRepsList[0]
+                                                                  .toDouble(),
                                                           salesRepCode:
                                                               salesRepsList[1]
                                                                   .toString(),
@@ -2231,7 +2236,8 @@ class _MobileSalesCreateOrderScreenState
                 : 'Sales Order Date is empty';
           }
 
-          String? deliveryDate = _salesOrderDelvDate?.toLocal().toIso8601String();
+          String? deliveryDate =
+              _salesOrderDelvDate?.toLocal().toIso8601String();
           if (deliveryDate == null) {
             // showToast('Delivery Date is empty');
             proceed = false;
@@ -2398,17 +2404,27 @@ class _MobileSalesCreateOrderScreenState
                   print('something errorrrrr: $e');
                 }
               } else {
-                showToastMessage(
-                    'An Error Has Occured!\nstatus code: ${response.statusCode}\nbody: ${response.body}',
-                    errorToast: true);
+                if (mounted) {
+                  alertDialog(context,
+                      title: 'Error',
+                      body:
+                          'An Error Has Occured!\nstatus code: ${response.statusCode}\nbody: ${response.body}');
+                }
+                // showToastMessage(
+                //     'An Error Has Occured!\nstatus code: ${response.statusCode}\nbody: ${response.body}',
+                //     errorToast: true);
                 if (kDebugMode) {
                   print(
                       'status code: ${response.statusCode}\nbody: ${response.body}');
                 }
               }
             }).catchError((error) {
-              showToastMessage('An Error Has Occured!: $error',
-                  errorToast: true);
+              if (mounted) {
+                alertDialog(context,
+                    title: 'Error', body: 'An Error Has Occured!: $error');
+              }
+              // showToastMessage('An Error Has Occured!: $error',
+              //     errorToast: true);
             });
           }
           setState(() {

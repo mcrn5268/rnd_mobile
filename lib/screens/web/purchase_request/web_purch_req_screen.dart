@@ -16,6 +16,7 @@ import 'package:rnd_mobile/utilities/clear_data.dart';
 import 'package:rnd_mobile/utilities/date_only.dart';
 import 'package:rnd_mobile/utilities/date_text_formatter.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
+import 'package:rnd_mobile/widgets/alert_dialog.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
 import 'package:rnd_mobile/widgets/web/web_reusable_row.dart';
@@ -748,18 +749,27 @@ class _WebPurchReqScreenState extends State<WebPurchReqScreen> {
                                                                       message =
                                                                           'Error! Something Went Wrong!\n${response.body}';
                                                                     }
-                                                                    if (kIsWeb) {
-                                                                      showToastMessage(
-                                                                          message,
-                                                                          errorToast:
-                                                                              messageIsError);
-                                                                    } else {
+                                                                    if (messageIsError) {
                                                                       if (mounted) {
-                                                                        CustomToast.show(
-                                                                            context:
-                                                                                context,
-                                                                            message:
+                                                                        alertDialog(
+                                                                            context,
+                                                                            title:
+                                                                                'Error',
+                                                                            body:
                                                                                 message);
+                                                                      }
+                                                                    } else {
+                                                                      if (kIsWeb) {
+                                                                        showToastMessage(
+                                                                            message,
+                                                                            errorToast:
+                                                                                messageIsError);
+                                                                      } else {
+                                                                        if (mounted) {
+                                                                          CustomToast.show(
+                                                                              context: context,
+                                                                              message: message);
+                                                                        }
                                                                       }
                                                                     }
 
@@ -1044,15 +1054,27 @@ class _WebPurchReqScreenState extends State<WebPurchReqScreen> {
                                               // The entered date is not within the valid range
                                               _reqFromDate = null;
                                               _fromFocusedDay = DateTime.now();
-                                              showToastMessage(
-                                                  'Entered date is not within the valid range');
+                                              if (mounted) {
+                                                alertDialog(context,
+                                                    title: 'Error',
+                                                    body:
+                                                        'Entered date is not within the valid range');
+                                              }
+                                              // showToastMessage(
+                                              //     'Entered date is not within the valid range');
                                             }
                                           } catch (e) {
                                             // The entered date is not valid
                                             _reqFromDate = null;
                                             _fromFocusedDay = DateTime.now();
-                                            showToastMessage(
-                                                'Entered date is not valid');
+                                            if (mounted) {
+                                              alertDialog(context,
+                                                  title: 'Error',
+                                                  body:
+                                                      'Entered date is not valid');
+                                            }
+                                            // showToastMessage(
+                                            //     'Entered date is not valid');
                                           }
                                           this.setState(() {});
                                         }
@@ -1117,15 +1139,27 @@ class _WebPurchReqScreenState extends State<WebPurchReqScreen> {
                                               // The entered date is not within the valid range
                                               _reqToDate = null;
                                               _toFocusedDay = DateTime.now();
-                                              showToastMessage(
-                                                  'Entered date is not within the valid range');
+                                              if (mounted) {
+                                                alertDialog(context,
+                                                    title: 'Error',
+                                                    body:
+                                                        'Entered date is not within the valid range');
+                                              }
+                                              // showToastMessage(
+                                              //     'Entered date is not within the valid range');
                                             }
                                           } catch (e) {
                                             // The entered date is not valid
                                             _reqToDate = null;
                                             _toFocusedDay = DateTime.now();
-                                            showToastMessage(
-                                                'Entered date is not valid');
+                                            if (mounted) {
+                                              alertDialog(context,
+                                                  title: 'Error',
+                                                  body:
+                                                      'Entered date is not valid');
+                                            }
+                                            // showToastMessage(
+                                            //     'Entered date is not valid');
                                           }
                                           this.setState(() {});
                                         }

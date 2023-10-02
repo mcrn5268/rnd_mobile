@@ -256,6 +256,7 @@ class MyApp extends StatelessWidget {
                             username: data['username']!,
                             sessionId: data['sessionId']!);
                         userProvider.setUser(user, notify: false);
+
                       }
                       if (userProvider.user == null) {
                         // User is not logged in
@@ -357,7 +358,7 @@ const MaterialColor customSwatch = MaterialColor(
 //PR
 // curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PR\",\"preqNum\":\"25\",\"requestDate\":\"16\",\"reference\":\"16\",\"warehouse\":\"16\",\"requestedBy\":\"16\",\"reason\":\"16\"}" http://192.168.254.163:3000/send-push-notification
 //PR only preqNum
-// curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PR\",\"preqNum\":\"44\"}" http://192.168.254.163:3000/send-push-notification
+// curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PR\",\"preqNum\":\"51\"}" http://192.168.254.163:3000/send-push-notification
 
 //PO
 // curl -X POST -H "Content-Type: application/json" -d "{\"usernames\":[\"admin\"],\"type\":\"PO\",\"poNum\":\"16\",\"poDate\":\"16\",\"delvDate\":\"16\",\"reference\":\"16\",\"warehouse\":\"16\",\"purpose\":\"16\",\"remarks\":\"16\"}" http://192.168.254.163:3000/send-push-notification

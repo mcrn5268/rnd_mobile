@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rnd_mobile/providers/purchase_request/purchase_req_provider.dart';
 import 'package:rnd_mobile/screens/web/purchase_request/web_purch_req_hist_screen.dart';
 import 'package:rnd_mobile/screens/web/purchase_request/web_purch_req_screen.dart';
+import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 
 class WebPurchReqMain extends StatefulWidget {
   const WebPurchReqMain({super.key});
@@ -99,7 +100,9 @@ class _WebPurchReqMainState extends State<WebPurchReqMain> {
                       if (index == 0) ...[
                         Visibility(
                           visible: Provider.of<PurchReqProvider>(context,
-                                          listen: true).purchReqPending != 0,
+                                      listen: true)
+                                  .purchReqPending !=
+                              0,
                           child: Positioned(
                             right: 0,
                             top: 5,
@@ -182,7 +185,7 @@ class _WebPurchReqMainState extends State<WebPurchReqMain> {
                     width: MediaQuery.of(context).size.width <= 1200
                         ? 1200
                         : MediaQuery.of(context).size.width,
-                    child: IndexedStack(
+                    child: LazyIndexedStack(
                       index: selectedIndex,
                       children: const [
                         WebPurchReqScreen(),

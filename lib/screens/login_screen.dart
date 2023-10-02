@@ -8,6 +8,7 @@ import 'package:rnd_mobile/api/auth_api.dart';
 import 'package:rnd_mobile/models/user_model.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
 import 'package:rnd_mobile/utilities/shared_pref.dart';
+import 'package:rnd_mobile/widgets/alert_dialog.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
 import 'package:universal_io/io.dart';
@@ -213,8 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                               responseData['result']
                                                   ['SessionID'];
                                           if (sessionId != null) {
-                                            const message =
-                                                'Success!';
+                                            const message = 'Success!';
                                             if (kIsWeb || Platform.isAndroid) {
                                               showToastMessage(message);
                                             } else {
@@ -230,7 +230,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 sessionId: sessionId);
                                           } else {
                                             if (kIsWeb) {
-                                              showToastMessage('Session ID is null');
+                                              showToastMessage(
+                                                  'Session ID is null');
                                             } else {
                                               if (mounted) {
                                                 CustomToast.show(
@@ -253,7 +254,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                           final errorMsg =
                                               responseData['error']['msg'];
                                           if (kIsWeb) {
-                                            showToastMessage('Error: $errorMsg');
+                                            if (mounted) {
+                                              alertDialog(context,
+                                                  title: 'Error',
+                                                  body: errorMsg);
+                                            }
                                           } else {
                                             if (mounted) {
                                               CustomToast.show(

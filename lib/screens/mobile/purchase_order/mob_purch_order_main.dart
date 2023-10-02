@@ -5,6 +5,7 @@ import 'package:rnd_mobile/providers/purchase_order/purchase_order_provider.dart
 import 'package:rnd_mobile/screens/mobile/purchase_order/mob_purch_order_hist_screen.dart';
 import 'package:rnd_mobile/screens/mobile/purchase_order/mob_purch_order_screen.dart';
 import 'package:rnd_mobile/utilities/clip_path.dart';
+import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 
 class MobilePurchOrderMain extends StatefulWidget {
   const MobilePurchOrderMain({super.key});
@@ -151,8 +152,7 @@ class _MobilePurchOrderMainState extends State<MobilePurchOrderMain> {
                           fontSize: 12,
                           color: index == selectedIndex
                               // ? const Color(0xFF795FCD)
-                              ? brightness ==
-                                      Brightness.dark
+                              ? brightness == Brightness.dark
                                   ? Colors.white
                                   : Colors.blueGrey
                               : Colors.grey,
@@ -166,7 +166,7 @@ class _MobilePurchOrderMainState extends State<MobilePurchOrderMain> {
           ),
         ),
         Expanded(
-          child: IndexedStack(index: selectedIndex, children: const [
+          child: LazyIndexedStack(index: selectedIndex, children: const [
             MobilePurchOrderScreen(),
             MobilePurchOrderHistScreen(),
           ]),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rnd_mobile/providers/sales_order/sales_order_provider.dart';
 import 'package:rnd_mobile/screens/web/sales_order/web_sales_create_order_screen.dart';
 import 'package:rnd_mobile/screens/web/sales_order/web_sales_order_hist_screen.dart';
+import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 
 class WebSalesOrderMain extends StatefulWidget {
   const WebSalesOrderMain({super.key});
@@ -153,7 +154,7 @@ class _WebSalesOrderMainState extends State<WebSalesOrderMain> {
                     width: MediaQuery.of(context).size.width <= 1200
                         ? 1200
                         : MediaQuery.of(context).size.width,
-                    child: IndexedStack(
+                    child: LazyIndexedStack(
                       index: selectedIndex,
                       children: const [
                         WebSalesCreateOrderScreen(),

@@ -5,6 +5,7 @@ import 'package:rnd_mobile/providers/sales_order/sales_order_provider.dart';
 import 'package:rnd_mobile/screens/mobile/sales_order/mob_sales_create_order_screen.dart';
 import 'package:rnd_mobile/screens/mobile/sales_order/mob_sales_order_hist_screen.dart';
 import 'package:rnd_mobile/utilities/clip_path.dart';
+import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 
 class MobileSalersOrderMain extends StatefulWidget {
   const MobileSalersOrderMain({super.key});
@@ -174,7 +175,7 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
           ),
         ),
         Expanded(
-          child: IndexedStack(index: selectedIndex, children: const [
+          child: LazyIndexedStack(index: selectedIndex, children: const [
             MobileSalesCreateOrderScreen(),
             MobileSalesOrderHistScreen(),
           ]),

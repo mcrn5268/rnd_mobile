@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purchase_order_provider.dart';
 import 'package:rnd_mobile/screens/web/purchase_order/web_purch_order_hist_screen.dart';
 import 'package:rnd_mobile/screens/web/purchase_order/web_purch_order_screen.dart';
+import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 
 class WebPurchOrderMain extends StatefulWidget {
   const WebPurchOrderMain({super.key});
@@ -185,7 +186,7 @@ class _WebPurchOrderMainState extends State<WebPurchOrderMain> {
                     width: MediaQuery.of(context).size.width <= 1200
                         ? 1200
                         : MediaQuery.of(context).size.width,
-                    child: IndexedStack(
+                    child: LazyIndexedStack(
                       index: selectedIndex,
                       children: const [
                         WebPurchOrderScreen(),

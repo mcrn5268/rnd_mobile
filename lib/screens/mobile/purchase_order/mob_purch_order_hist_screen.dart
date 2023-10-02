@@ -11,6 +11,7 @@ import 'package:rnd_mobile/providers/user_provider.dart';
 import 'package:rnd_mobile/utilities/date_only.dart';
 import 'package:rnd_mobile/utilities/date_text_formatter.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
+import 'package:rnd_mobile/widgets/alert_dialog.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_purch_order_dialog.dart';
 import 'package:rnd_mobile/widgets/mobile/mob_reusable_column.dart';
 import 'package:rnd_mobile/widgets/toast.dart';
@@ -722,15 +723,28 @@ class _MobilePurchOrderHistScreenState
                                         // The entered date is not within the valid range
                                         _orderFromDate = null;
                                         _fromFocusedDay = DateTime.now();
-                                        showToastMessage(
-                                            'Entered date is not within the valid range');
+                                        // showToastMessage(
+                                        //     'Entered date is not within the valid range');
+
+                                        if (mounted) {
+                                          alertDialog(context,
+                                              title: 'Error',
+                                              body:
+                                                  'Entered date is not within the valid range');
+                                        }
                                       }
                                     } catch (e) {
                                       // The entered date is not valid
                                       _orderFromDate = null;
                                       _fromFocusedDay = DateTime.now();
-                                      showToastMessage(
-                                          'Entered date is not valid');
+                                      // showToastMessage(
+                                      //     'Entered date is not valid');
+
+                                      if (mounted) {
+                                        alertDialog(context,
+                                            title: 'Error',
+                                            body: 'Entered date is not valid');
+                                      }
                                     }
                                     setState(() {});
                                   }
@@ -791,15 +805,27 @@ class _MobilePurchOrderHistScreenState
                                         // The entered date is not within the valid range
                                         _orderToDate = null;
                                         _toFocusedDay = DateTime.now();
-                                        showToastMessage(
-                                            'Entered date is not within the valid range');
+
+                                        if (mounted) {
+                                          alertDialog(context,
+                                              title: 'Error',
+                                              body:
+                                                  'Entered date is not within the valid range');
+                                        }
+                                        // showToastMessage(
+                                        //     'Entered date is not within the valid range');
                                       }
                                     } catch (e) {
                                       // The entered date is not valid
                                       _orderToDate = null;
                                       _toFocusedDay = DateTime.now();
-                                      showToastMessage(
-                                          'Entered date is not valid');
+                                      if (mounted) {
+                                        alertDialog(context,
+                                            title: 'Error',
+                                            body: 'Entered date is not valid\n$e');
+                                      }
+                                      // showToastMessage(
+                                      //     'Entered date is not valid');
                                     }
                                     setState(() {});
                                   }

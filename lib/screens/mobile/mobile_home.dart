@@ -29,6 +29,7 @@ import 'package:rnd_mobile/utilities/clear_data.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/utilities/shared_pref.dart';
 import 'package:rnd_mobile/utilities/timestamp_formatter.dart';
+import 'package:rnd_mobile/widgets/alert_dialog.dart';
 import 'package:rnd_mobile/widgets/greetings.dart';
 import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 import 'package:rnd_mobile/widgets/show_dialog.dart';
@@ -112,40 +113,40 @@ class _MobileHomeState extends State<MobileHome>
       webNotificationStream();
     } else {
       //when user taps notif
-      //   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      //     setState(() {
-      //       futures = [
-      //         _getPurchReqData(button: true),
-      //         _getPurchOrderData(button: true),
-      //         _getSalesOrderData(button: true),
-      //         _getSalesOrderItemsData(button: true),
-      //       ];
-      //     });
-      //     if (message.data['type'] == 'PR') {
-      //       String requestNumber = message.data['preqNum'];
-      //       purchReqProvider.setReqNumber(
-      //           reqNumber: int.parse(requestNumber), notify: true);
-      //       indexNotifier = ValueNotifier(0);
-      //     }
-      //     if (message.data['type'] == 'PO') {
-      //       String orderNumber = message.data['poNum'];
-      //       purchOrderProvider.setOrderNumber(
-      //           orderNumber: int.parse(orderNumber), notify: true);
-      //       indexNotifier = ValueNotifier(1);
-      //     }
+      // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      //   setState(() {
+      //     futures = [
+      //       _getPurchReqData(button: true),
+      //       _getPurchOrderData(button: true),
+      //       // _getSalesOrderData(button: true),
+      //       // _getSalesOrderItemsData(button: true),
+      //     ];
       //   });
+      //   if (message.data['type'] == 'PR') {
+      //     String requestNumber = message.data['preqNum'];
+      //     purchReqProvider.setReqNumber(
+      //         reqNumber: int.parse(requestNumber), notify: true);
+      //     indexNotifier = ValueNotifier(0);
+      //   }
+      //   if (message.data['type'] == 'PO') {
+      //     String orderNumber = message.data['poNum'];
+      //     purchOrderProvider.setOrderNumber(
+      //         orderNumber: int.parse(orderNumber), notify: true);
+      //     indexNotifier = ValueNotifier(1);
+      //   }
+      // });
 
-      //   //foreground
-      //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      //     player.play('audio/notif_sound2.mp3');
-      //     showToastMessage(
-      //       message.data['type'] == 'PR'
-      //           ? 'New Purchase Request!'
-      //           : 'New Purchase Order!',
-      //     );
-      //     //just for the refresh icon to show red indicator
-      //     refreshIconIndicatorProvider.setShow(show: true);
-      //   });
+      // //foreground
+      // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      //   player.play('audio/notif_sound2.mp3');
+      //   showToastMessage(
+      //     message.data['type'] == 'PR'
+      //         ? 'New Purchase Request!'
+      //         : 'New Purchase Order!',
+      //   );
+      //   //just for the refresh icon to show red indicator
+      //   refreshIconIndicatorProvider.setShow(show: true);
+      // });
     }
   }
 
@@ -195,23 +196,26 @@ class _MobileHomeState extends State<MobileHome>
   }
 
   Future<void> webNotification({required Map<String, dynamic> data}) async {
-    String type = data['notifications'].last['type'];
-    String body = data['notifications'].last[type == "group"
-        ? 'body'
-        : type == "PR"
-            ? 'preqNum'
-            : 'poNum'];
+    final notifications = data['notifications'];
+    final lastNotification = notifications.last;
+    final type = lastNotification['type'];
+
     if (type != "group") {
-      //just for the refresh icon to show red indicator
       refreshIconIndicatorProvider.setShow(show: true);
     }
-    final notification = type == "group"
-        ? createNotification('New Notification!', body)
-        : createNotification(
-            'New Purchase ${type == "PR" ? "Request" : "Order"}!',
-            data['type'] == "PR"
-                ? "Request Number: ${data["preqNum"]}"
-                : "Order Number: ${data["poNum"]}");
+
+    final notificationTitle = type == "group"
+        ? 'New Notification!'
+        : 'New Purchase ${type == "PR" ? "Request" : "Order"}!';
+
+    final notificationBody = type == "group"
+        ? lastNotification['body']
+        : type == "PR"
+            ? "Request Number: ${lastNotification['preqNum']}"
+            : "Order Number: ${lastNotification['poNum']}";
+
+    final notification =
+        createNotification(notificationTitle, notificationBody);
     notification.callMethod('addEventListener', [
       'click',
       (event) {
@@ -832,11 +836,15 @@ class _MobileHomeState extends State<MobileHome>
                               try {
                                 await AuthAPIService.logout(
                                     sessionId: userProvider.user!.sessionId);
-                                if (!mounted) return;
-                                clearData(context);
+                                if (mounted) {
+                                  clearData(context);
+                                }
                                 showToastMessage('Logging Out Successful!');
                               } catch (e) {
-                                showToastMessage('Something Went Wrong!');
+                                if (mounted) {
+                                  alertDialog(context,
+                                      title: 'Error', body: '$e');
+                                }
 
                                 if (kDebugMode) {
                                   print('Error Logout: $e');

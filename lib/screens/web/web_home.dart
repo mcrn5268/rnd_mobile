@@ -29,6 +29,7 @@ import 'package:rnd_mobile/screens/web/sales_order/web_sales_order_main.dart';
 import 'package:rnd_mobile/utilities/clear_data.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/utilities/timestamp_formatter.dart';
+import 'package:rnd_mobile/widgets/alert_dialog.dart';
 import 'package:rnd_mobile/widgets/lazy_indexedstack.dart';
 import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:rnd_mobile/widgets/greetings.dart';
@@ -37,7 +38,7 @@ import 'package:rnd_mobile/widgets/toast.dart';
 import 'package:rnd_mobile/widgets/web/web_app_bar.dart';
 
 //enable ONLY for web
-// import 'dart:html' as web;
+import 'dart:html' as web;
 import 'dart:js' as js;
 
 //enable ONLY for desktop
@@ -139,11 +140,11 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
       purchReqProvider.clearList();
     }
     return PurchReqService.getPurchReqView(
-        sessionId: userProvider.user!.sessionId,
-        recordOffset: 0,
-        forPending: true,
-        // forAll: true
-        );
+      sessionId: userProvider.user!.sessionId,
+      recordOffset: 0,
+      forPending: true,
+      // forAll: true
+    );
   }
 
   Future<dynamic> _getPurchOrderData({bool button = false}) {
@@ -152,11 +153,11 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
       purchOrderProvider.clearList();
     }
     return PurchOrderService.getPurchOrderView(
-        sessionId: userProvider.user!.sessionId,
-        recordOffset: 0,
-        forPending: true,
-        // forAll: true
-        );
+      sessionId: userProvider.user!.sessionId,
+      recordOffset: 0,
+      forPending: true,
+      // forAll: true
+    );
   }
 
   // Future<dynamic> _getSalesOrderData({bool button = false}) {
@@ -209,7 +210,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
   }
 
   js.JsObject createNotification(String title, String body) {
-    showToastMessage('$title web');
+    showToastMessage(title);
     return js.JsObject(js.context['Notification'], [
       title,
       js.JsObject.jsify({'body': body})
@@ -217,53 +218,60 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
   }
 
   Future<void> webNotification({required Map<String, dynamic> data}) async {
-    String type = data['notifications'].last['type'];
-    String body = data['notifications'].last[type == "group"
-        ? 'body'
-        : type == "PR"
-            ? 'preqNum'
-            : 'poNum'];
+    final notifications = data['notifications'];
+    final lastNotification = notifications.last;
+    final type = lastNotification['type'];
+
     if (type != "group") {
-      //just for the refresh icon to show red indicator
       refreshIconIndicatorProvider.setShow(show: true);
     }
-    final notification = type == "group"
-        ? createNotification('New Notification!', body)
-        : createNotification(
-            'New Purchase ${type == "PR" ? "Request" : "Order"}!',
-            data['type'] == "PR"
-                ? "Request Number: ${data["preqNum"]}"
-                : "Order Number: ${data["poNum"]}");
+
+    final notificationTitle = type == "group"
+        ? 'New Notification!'
+        : 'New Purchase ${type == "PR" ? "Request" : "Order"}!';
+
+    final notificationBody = type == "group"
+        ? lastNotification['body']
+        : type == "PR"
+            ? "Request Number: ${lastNotification['preqNum']}"
+            : "Order Number: ${lastNotification['poNum']}";
+
+    final notification =
+        createNotification(notificationTitle, notificationBody);
+
     notification.callMethod('addEventListener', [
       'click',
       (event) {
         js.context.callMethod('focus');
+
         if (type != "group") {
           futures = [
             _getPurchReqData(button: true),
             _getPurchOrderData(button: true),
-            // _getSalesOrderData(button: true),
-            // _getSalesOrderItemsData(button: true),
           ];
         }
-        //first for selected item in menu to update
+
         first = true;
-        if (data['type'] == 'PR') {
+
+        if (type == 'PR') {
           purchReqProvider.setReqNumber(
-              reqNumber: int.parse(data["preqNum"]), notify: true);
-          indexNotifier.value = 0;
-          selectedIndex = 0;
-          indexNotifier = ValueNotifier(0);
-        } else if (data['type'] == 'PO') {
+              reqNumber: int.parse(lastNotification["preqNum"]), notify: true);
+          updateSelectedIndex(0);
+        } else if (type == 'PO') {
           purchOrderProvider.setOrderNumber(
-              orderNumber: int.parse(data["poNum"]), notify: true);
-          indexNotifier.value = 1;
-          selectedIndex = 1;
-          indexNotifier = ValueNotifier(1);
+              orderNumber: int.parse(lastNotification["poNum"]), notify: true);
+          updateSelectedIndex(1);
         }
+
         setState(() {});
       }
     ]);
+  }
+
+  void updateSelectedIndex(int newIndex) {
+    indexNotifier.value = newIndex;
+    selectedIndex = newIndex;
+    indexNotifier = ValueNotifier(newIndex);
   }
 
   // void desktopNotificationStream() {
@@ -506,6 +514,9 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                     tooltip: "Refresh",
                     icon: const Icon(Icons.refresh, color: Colors.white),
                     onPressed: () {
+                      if (mounted) {
+                        clearData(context);
+                      }
                       showToastMessage('Refreshing data...');
 
                       Provider.of<RefreshIconIndicatorProvider>(context,
@@ -578,8 +589,9 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                         try {
                           await AuthAPIService.logout(
                               sessionId: userProvider.user!.sessionId);
-                          if (!mounted) return;
-                          clearData(context);
+                          if (mounted) {
+                            clearData(context);
+                          }
 
                           if (kIsWeb) {
                             showToastMessage('Logging Out Successful!');
@@ -591,15 +603,12 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                             }
                           }
                         } catch (e) {
-                          if (kIsWeb) {
-                            showToastMessage('Something Went Wrong!');
-                          } else {
-                            if (mounted) {
-                              CustomToast.show(
-                                  context: context,
-                                  message: 'Something Went Wrong!');
-                            }
+                          if (mounted) {
+                            alertDialog(context,
+                                title: 'Error',
+                                body: 'Something Went Wrong! $e');
                           }
+
                           if (kDebugMode) {
                             print('Error Logout: $e');
                           }
