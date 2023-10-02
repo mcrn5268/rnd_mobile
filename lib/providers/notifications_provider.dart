@@ -16,6 +16,15 @@ class NotificationProvider extends ChangeNotifier {
     }
   }
 
+  void addNotification(dynamic notification, {bool notify = true}) {
+    _notifications.add(notification);
+    _seen = !notifications.any((notif) => notif['seen'] == false);
+
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
   void clearNotifications({bool notify = true}) {
     _notifications = [];
     if (notify) {

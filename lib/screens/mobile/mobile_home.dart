@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -38,12 +39,12 @@ import 'package:rnd_mobile/widgets/windows_custom_toast.dart';
 import 'package:universal_io/io.dart';
 
 //ONLY ENABLE THIS PACKAGE FOR WEB
-import 'dart:js' as js;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:async';
+// import 'dart:js' as js;
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'dart:async';
 
 //ONLY ENABLE THIS PACKAGE FOR MOBILE
-// import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class MobileHome extends StatefulWidget {
   const MobileHome({super.key});
@@ -71,7 +72,7 @@ class _MobileHomeState extends State<MobileHome>
   late Brightness brightness;
 
   //ONLY FOR WEB
-  StreamSubscription<DocumentSnapshot>? _subscription;
+  // StreamSubscription<DocumentSnapshot>? _subscription;
 
   @override
   void initState() {
@@ -110,43 +111,49 @@ class _MobileHomeState extends State<MobileHome>
       titleNotifier = ValueNotifier('');
     }
     if (kIsWeb) {
-      webNotificationStream();
+      // webNotificationStream();
     } else {
-      //when user taps notif
-      // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      //   setState(() {
-      //     futures = [
-      //       _getPurchReqData(button: true),
-      //       _getPurchOrderData(button: true),
-      //       // _getSalesOrderData(button: true),
-      //       // _getSalesOrderItemsData(button: true),
-      //     ];
-      //   });
-      //   if (message.data['type'] == 'PR') {
-      //     String requestNumber = message.data['preqNum'];
-      //     purchReqProvider.setReqNumber(
-      //         reqNumber: int.parse(requestNumber), notify: true);
-      //     indexNotifier = ValueNotifier(0);
-      //   }
-      //   if (message.data['type'] == 'PO') {
-      //     String orderNumber = message.data['poNum'];
-      //     purchOrderProvider.setOrderNumber(
-      //         orderNumber: int.parse(orderNumber), notify: true);
-      //     indexNotifier = ValueNotifier(1);
-      //   }
-      // });
+      // when user taps notif
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        setState(() {
+          futures = [
+            _getPurchReqData(button: true),
+            _getPurchOrderData(button: true),
+            // _getSalesOrderData(button: true),
+            // _getSalesOrderItemsData(button: true),
+          ];
+        });
+        if (message.data['type'] == 'PR') {
+          String requestNumber = message.data['preqNum'];
+          purchReqProvider.setReqNumber(
+              reqNumber: int.parse(requestNumber), notify: true);
+          indexNotifier = ValueNotifier(0);
+        }
+        if (message.data['type'] == 'PO') {
+          String orderNumber = message.data['poNum'];
+          purchOrderProvider.setOrderNumber(
+              orderNumber: int.parse(orderNumber), notify: true);
+          indexNotifier = ValueNotifier(1);
+        }
+      });
 
-      // //foreground
-      // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      //   player.play('audio/notif_sound2.mp3');
-      //   showToastMessage(
-      //     message.data['type'] == 'PR'
-      //         ? 'New Purchase Request!'
-      //         : 'New Purchase Order!',
-      //   );
-      //   //just for the refresh icon to show red indicator
-      //   refreshIconIndicatorProvider.setShow(show: true);
-      // });
+      //foreground
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        final type = message.data['type'];
+        print('foreground: $type');
+        player.play('audio/notif_sound2.mp3');
+        showToastMessage(
+            type == 'PR' ? 'New Purchase Request!' : 'New Purchase Order!');
+        refreshIconIndicatorProvider.setShow(show: true);
+        notifProvider.addNotification({
+          'type': type,
+          'timestamp': Timestamp.now().millisecondsSinceEpoch,
+          'seen': false,
+          if (type == 'group') 'group': message.data['group'],
+          if (type == 'PR') 'preqNum': message.data['preqNum'],
+          if (type == 'PO') 'poNum': message.data['poNum'],
+        });
+      });
     }
   }
 
@@ -154,95 +161,94 @@ class _MobileHomeState extends State<MobileHome>
   void dispose() {
     indexNotifier.dispose();
     titleNotifier.dispose();
-    _subscription?.cancel();
+    // _subscription?.cancel();
     super.dispose();
   }
 
-  void webNotificationStream() {
-    bool stream = false;
-    final documentRef = FirebaseFirestore.instance
-        .collection("notifications")
-        .doc(userProvider.user!.username);
-    _subscription = documentRef.snapshots().listen(
-      (event) {
-        if (stream) {
-          final data = event.data()!;
-          if (data['notifications'] != null) {
-            if (data['triggerStream'] == true) {
-              webNotification(data: data);
-              player.play('audio/notif_sound2.mp3',
-                  isNotification: true, volume: 0.5);
-            }
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              notifProvider.setNotifications(data['notifications'],
-                  notify: true);
-              notifProvider.setSeen(!notifProvider.notifications
-                  .any((notif) => notif['seen'] == false));
-            });
-          }
-        }
-        stream = true;
-      },
-      onError: (error) => print("Listen failed: $error"),
-    );
-  }
+  // void webNotificationStream() {
+  //   bool stream = false;
+  //   final documentRef = FirebaseFirestore.instance
+  //       .collection("notifications")
+  //       .doc(userProvider.user!.username);
+  //   _subscription = documentRef.snapshots().listen(
+  //     (event) {
+  //       if (stream) {
+  //         final data = event.data()!;
+  //         if (data['notifications'] != null) {
+  //           if (data['triggerStream'] == true) {
+  //             webNotification(data: data);
+  //             player.play('audio/notif_sound2.mp3',
+  //                 isNotification: true, volume: 0.5);
+  //           }
+  //           WidgetsBinding.instance.addPostFrameCallback((_) {
+  //             notifProvider.setNotifications(data['notifications']);
+  //             notifProvider.setSeen(!notifProvider.notifications
+  //                 .any((notif) => notif['seen'] == false));
+  //           });
+  //         }
+  //       }
+  //       stream = true;
+  //     },
+  //     onError: (error) => print("Listen failed: $error"),
+  //   );
+  // }
 
-  js.JsObject createNotification(String title, String body) {
-    showToastMessage(title);
-    return js.JsObject(js.context['Notification'], [
-      title,
-      js.JsObject.jsify({'body': body})
-    ]);
-  }
+  // js.JsObject createNotification(String title, String body) {
+  //   showToastMessage(title);
+  //   return js.JsObject(js.context['Notification'], [
+  //     title,
+  //     js.JsObject.jsify({'body': body})
+  //   ]);
+  // }
 
-  Future<void> webNotification({required Map<String, dynamic> data}) async {
-    final notifications = data['notifications'];
-    final lastNotification = notifications.last;
-    final type = lastNotification['type'];
+  // Future<void> webNotification({required Map<String, dynamic> data}) async {
+  //   final notifications = data['notifications'];
+  //   final lastNotification = notifications.last;
+  //   final type = lastNotification['type'];
 
-    if (type != "group") {
-      refreshIconIndicatorProvider.setShow(show: true);
-    }
+  //   if (type != "group") {
+  //     refreshIconIndicatorProvider.setShow(show: true);
+  //   }
 
-    final notificationTitle = type == "group"
-        ? 'New Notification!'
-        : 'New Purchase ${type == "PR" ? "Request" : "Order"}!';
+  //   final notificationTitle = type == "group"
+  //       ? 'New Notification!'
+  //       : 'New Purchase ${type == "PR" ? "Request" : "Order"}!';
 
-    final notificationBody = type == "group"
-        ? lastNotification['body']
-        : type == "PR"
-            ? "Request Number: ${lastNotification['preqNum']}"
-            : "Order Number: ${lastNotification['poNum']}";
+  //   final notificationBody = type == "group"
+  //       ? lastNotification['body']
+  //       : type == "PR"
+  //           ? "Request Number: ${lastNotification['preqNum']}"
+  //           : "Order Number: ${lastNotification['poNum']}";
 
-    final notification =
-        createNotification(notificationTitle, notificationBody);
-    notification.callMethod('addEventListener', [
-      'click',
-      (event) {
-        js.context.callMethod('focus');
-        if (type != "group") {
-          futures = [
-            _getPurchReqData(button: true),
-            _getPurchOrderData(button: true),
-            // _getSalesOrderData(button: true),
-            // _getSalesOrderItemsData(button: true),
-          ];
-        }
-        if (data['type'] == 'PR') {
-          purchReqProvider.setReqNumber(
-              reqNumber: int.parse(data["preqNum"]), notify: true);
-          indexNotifier.value = 0;
-          indexNotifier = ValueNotifier(0);
-        } else if (data['type'] == 'PO') {
-          purchOrderProvider.setOrderNumber(
-              orderNumber: int.parse(data["poNum"]), notify: true);
-          indexNotifier.value = 1;
-          indexNotifier = ValueNotifier(1);
-        }
-        setState(() {});
-      }
-    ]);
-  }
+  //   final notification =
+  //       createNotification(notificationTitle, notificationBody);
+  //   notification.callMethod('addEventListener', [
+  //     'click',
+  //     (event) {
+  //       js.context.callMethod('focus');
+  //       if (type != "group") {
+  //         futures = [
+  //           _getPurchReqData(button: true),
+  //           _getPurchOrderData(button: true),
+  //           // _getSalesOrderData(button: true),
+  //           // _getSalesOrderItemsData(button: true),
+  //         ];
+  //       }
+  //       if (data['type'] == 'PR') {
+  //         purchReqProvider.setReqNumber(
+  //             reqNumber: int.parse(data["preqNum"]), notify: true);
+  //         indexNotifier.value = 0;
+  //         indexNotifier = ValueNotifier(0);
+  //       } else if (data['type'] == 'PO') {
+  //         purchOrderProvider.setOrderNumber(
+  //             orderNumber: int.parse(data["poNum"]), notify: true);
+  //         indexNotifier.value = 1;
+  //         indexNotifier = ValueNotifier(1);
+  //       }
+  //       setState(() {});
+  //     }
+  //   ]);
+  // }
 
   List<Future<Map<String, dynamic>>> _getLoadedData() {
     return [
@@ -329,15 +335,15 @@ class _MobileHomeState extends State<MobileHome>
                             for (final notification
                                 in consumerNotifProvider.notifications) {
                               notification['seen'] = true;
-                              await FirestoreService().create(
-                                  collection: 'notifications',
-                                  documentId: userProvider.user!.username,
-                                  data: {
-                                    'notifications':
-                                        consumerNotifProvider.notifications,
-                                    'triggerStream': false
-                                  });
                             }
+                            await FirestoreService().create(
+                                collection: 'notifications',
+                                documentId: userProvider.user!.username,
+                                data: {
+                                  'notifications':
+                                      consumerNotifProvider.notifications,
+                                  'triggerStream': false
+                                });
                           }
                         },
                         itemBuilder: (BuildContext context) {
@@ -449,9 +455,7 @@ class _MobileHomeState extends State<MobileHome>
                       onPressed: () {
                         showToastMessage('Refreshing data...');
 
-                        Provider.of<RefreshIconIndicatorProvider>(context,
-                                listen: false)
-                            .setShow(show: false);
+                        refreshIconIndicatorProvider.setShow(show: false);
                         setState(() {
                           refresh = true;
                           //GET new data
@@ -471,7 +475,10 @@ class _MobileHomeState extends State<MobileHome>
                     right: 5,
                     top: 10,
                     child: Visibility(
-                      visible: refreshIconIndicatorProvider.show,
+                      visible: Provider.of<RefreshIconIndicatorProvider>(
+                              context,
+                              listen: true)
+                          .show,
                       child: Container(
                         width: 10,
                         height: 10,

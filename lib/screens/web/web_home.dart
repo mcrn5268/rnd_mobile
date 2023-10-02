@@ -196,9 +196,8 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                   isNotification: true, volume: 0.5);
             }
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              notifProvider.setNotifications(data['notifications'],
-                  notify: true);
-              notifProvider.setSeen(notifProvider.notifications
+              notifProvider.setNotifications(data['notifications']);
+              notifProvider.setSeen(!notifProvider.notifications
                   .any((notif) => notif['seen'] == false));
             });
           }
@@ -397,15 +396,15 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                           for (final notification
                               in consumerNotifProvider.notifications) {
                             notification['seen'] = true;
-                            await FirestoreService().create(
-                                collection: 'notifications',
-                                documentId: userProvider.user!.username,
-                                data: {
-                                  'notifications':
-                                      consumerNotifProvider.notifications,
-                                  'triggerStream': false
-                                });
                           }
+                          await FirestoreService().create(
+                              collection: 'notifications',
+                              documentId: userProvider.user!.username,
+                              data: {
+                                'notifications':
+                                    consumerNotifProvider.notifications,
+                                'triggerStream': false
+                              });
                         }
                       },
                       itemBuilder: (BuildContext context) {
@@ -519,9 +518,7 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                       }
                       showToastMessage('Refreshing data...');
 
-                      Provider.of<RefreshIconIndicatorProvider>(context,
-                              listen: false)
-                          .setShow(show: false);
+                      refreshIconIndicatorProvider.setShow(show: false);
                       setState(() {
                         refresh = true;
                         //GET new data
@@ -541,7 +538,9 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                   right: 5,
                   top: 10,
                   child: Visibility(
-                    visible: refreshIconIndicatorProvider.show,
+                    visible: Provider.of<RefreshIconIndicatorProvider>(context,
+                            listen: true)
+                        .show,
                     child: Container(
                       width: 10,
                       height: 10,
