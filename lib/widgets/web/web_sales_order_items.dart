@@ -105,6 +105,20 @@ Widget webSalesOrderItems(
                         flex: 1,
                         text: salesOrderItem[7].toString().trim(),
                       ),
+                      //Stock Status
+                      WebReusableRow(
+                        flex: 1,
+                        text: salesOrderItem[4] == 'Y'
+                            ? 'In Stock'
+                            : salesOrderItem[4] == 'N'
+                                ? 'Out of Stock'
+                                : '---',
+                        color: salesOrderItem[4] == 'Y'
+                            ? Colors.green
+                            : salesOrderItem[4] == 'N'
+                                ? Colors.red
+                                : Colors.grey,
+                      ),
                       if (clickable) ...[
                         const SizedBox(
                           width: 10,

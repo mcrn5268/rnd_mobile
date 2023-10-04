@@ -28,8 +28,13 @@ class _WebSalesOrderItemsScreenState extends State<WebSalesOrderItemsScreen> {
   bool fromSearch = false;
 
   Future<dynamic> _getSalesOrderItemsData() {
-    return SalesOrderService.getItemView(
-        sessionId: userProvider.user!.sessionId);
+    if (salesOrderItemsProvider.didLoadDataAlready) {
+      initialLoad = true;
+      return Future.value();
+    } else {
+      return SalesOrderService.getItemView(
+          sessionId: userProvider.user!.sessionId);
+    }
   }
 
   @override
@@ -39,9 +44,6 @@ class _WebSalesOrderItemsScreenState extends State<WebSalesOrderItemsScreen> {
     salesOrderItemsProvider =
         Provider.of<ItemsProvider>(context, listen: false);
     itemsData = _getSalesOrderItemsData();
-    items = salesOrderItemsProvider.items;
-    itemsHasMore = salesOrderItemsProvider.hasMore;
-    searchValue = salesOrderItemsProvider.search;
   }
 
   @override
@@ -60,14 +62,19 @@ class _WebSalesOrderItemsScreenState extends State<WebSalesOrderItemsScreen> {
             if (!salesOrderItemsFlag) {
               final List<dynamic> data = snapshot.data!['items'];
               salesOrderItemsProvider.addItems(items: data, notify: false);
+              salesOrderItemsProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
           }
+          items = salesOrderItemsProvider.items;
+          itemsHasMore = salesOrderItemsProvider.hasMore;
+          searchValue = salesOrderItemsProvider.search;
 
           return Consumer<ItemsProvider>(
               builder: (context, salesOrderItemsProvider, _) {
             String? searchValue = salesOrderItemsProvider.search;
-            List<dynamic> itemsCopy = items;
+            List<dynamic> itemsCopy = [...items];
             if (searchValue != null && searchValue != '') {
               fromSearch = true;
               itemsCopy = items.where((item) {
@@ -133,6 +140,10 @@ class _WebSalesOrderItemsScreenState extends State<WebSalesOrderItemsScreen> {
                           WebReusableRow(
                             flex: 1,
                             text: 'Selling Price',
+                          ),
+                          WebReusableRow(
+                            flex: 1,
+                            text: 'Stock',
                           ),
                           SizedBox(
                             width: 15,

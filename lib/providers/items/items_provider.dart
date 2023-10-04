@@ -11,6 +11,10 @@ class ItemsProvider extends ChangeNotifier {
   bool get hasMore => _hasMore;
   int get loadedItems => _loadedItems;
 
+  // just to check if items already loaded once or not
+  bool _didLoadDataAlready = false;
+  bool get didLoadDataAlready => _didLoadDataAlready;
+
   void addItem({required List<dynamic> item, notify = true}) {
     _items.add(item);
     if (notify) {
@@ -19,6 +23,7 @@ class ItemsProvider extends ChangeNotifier {
   }
 
   void addItems({required List<dynamic> items, notify = true}) {
+    _didLoadDataAlready = true;
     _items.addAll(items);
     if (notify) {
       notifyListeners();

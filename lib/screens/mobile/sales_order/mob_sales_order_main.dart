@@ -75,7 +75,10 @@ class _MobileSalersOrderMainState extends State<MobileSalersOrderMain> {
                         width: MediaQuery.of(context).size.width - 50,
                         child: TextField(
                           controller: _searchController,
-                          style: const TextStyle(fontSize: 12),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
                           decoration: InputDecoration(
                             contentPadding:
                                 const EdgeInsets.symmetric(vertical: 18),

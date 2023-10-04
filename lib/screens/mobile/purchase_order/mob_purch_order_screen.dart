@@ -43,7 +43,7 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   OrderDataType _orderDataType = OrderDataType.poDate;
   final OrderStatus _orderStatus = OrderStatus.pending;
   OrderSort _orderSort = OrderSort.asc;
@@ -191,6 +191,7 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
           notify: false);
     }
     brightness = PlatformDispatcher.instance.platformBrightness;
+    hasMore = purchOrderProvider.hasMore;
   }
 
   @override

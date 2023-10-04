@@ -79,9 +79,9 @@ Widget mobileSalesOrderItems(
                                 salesOrderItem[3].toString().trim(),
                             //Cost Method
                             thirdRowSecondText:
-                                salesOrderItem[5].toString().trim(),
+                                salesOrderItem[6].toString().trim(),
                             //Unit
-                            fourthRowFirstText: salesOrderItem[6],
+                            fourthRowFirstText: salesOrderItem[5],
                             //Selling Price
                             fourthRowSecondText: salesOrderItem[7].toString(),
                             statusColor: salesOrderItem[4] == 'Y'

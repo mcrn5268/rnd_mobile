@@ -33,7 +33,7 @@ class _MobilePurchOrderHistScreenState
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   OrderDataType _orderDataType = OrderDataType.poDate;
   OrderStatus _orderStatus = OrderStatus.all;
   OrderSort _orderSort = OrderSort.asc;
@@ -146,9 +146,7 @@ class _MobilePurchOrderHistScreenState
 
   void _loadMore() async {
     late List<PurchaseOrder> newPurchaseOrders;
-    if (Provider.of<PurchOrderHistFilterProvider>(context, listen: false)
-            .status ==
-        OrderStatus.pending) {
+    if (orderFilterProvider.status == OrderStatus.pending) {
       final data = await PurchOrderService.getPurchOrderView(
         sessionId: userProvider.user!.sessionId,
         recordOffset: _loadedItemsCount,
@@ -180,8 +178,8 @@ class _MobilePurchOrderHistScreenState
     setState(() {
       isLoadingMore = false;
       _loadedItemsCount += newPurchaseOrders.length;
-      Provider.of<PurchOrderProvider>(context, listen: false)
-          .addItems(purchOrders: newPurchaseOrders);
+      purchOrderProvider.setItemsHasMore(hasMore: hasMore, notify: false);
+      purchOrderProvider.addItems(purchOrders: newPurchaseOrders);
     });
   }
 
@@ -231,10 +229,12 @@ class _MobilePurchOrderHistScreenState
             if (!purchOrderFlag) {
               final List<PurchaseOrder> data = snapshot.data!['purchaseOrders'];
               purchOrderProvider.addItems(purchOrders: data, notify: false);
+              purchOrderProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
           }
-
+          hasMore = purchOrderProvider.hasMore;
           return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(children: [
@@ -822,7 +822,8 @@ class _MobilePurchOrderHistScreenState
                                       if (mounted) {
                                         alertDialog(context,
                                             title: 'Error',
-                                            body: 'Entered date is not valid\n$e');
+                                            body:
+                                                'Entered date is not valid\n$e');
                                       }
                                       // showToastMessage(
                                       //     'Entered date is not valid');

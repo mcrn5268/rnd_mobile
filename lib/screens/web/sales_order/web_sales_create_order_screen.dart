@@ -130,6 +130,19 @@ class _WebSalesCreateOrderScreenState extends State<WebSalesCreateOrderScreen> {
   DateTime _salesOrderDelvfocusedDay = DateTime.now();
   DateTime? _salesOrderDelvDate;
 
+  late Future itemsData;
+  bool initialLoad = false;
+
+  Future<dynamic> _getSalesOrderItemsData() {
+    if (salesOrderItemsProvider.didLoadDataAlready) {
+      initialLoad = true;
+      return Future.value();
+    } else {
+      return SalesOrderService.getItemView(
+          sessionId: userProvider.user!.sessionId);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1735,325 +1748,301 @@ class _WebSalesCreateOrderScreenState extends State<WebSalesCreateOrderScreen> {
                                 final item = await showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
-                                      List<dynamic> mainList =
-                                          salesOrderItemsProvider.items;
-                                      List<dynamic> subList = mainList;
-                                      return StatefulBuilder(builder:
-                                          (BuildContext context,
-                                              StateSetter setState) {
-                                        return SimpleDialog(
-                                          title: SizedBox(
-                                              height: 30,
-                                              width: 200,
-                                              child: TextField(
-                                                style: const TextStyle(
-                                                    fontSize: 12),
-                                                decoration:
-                                                    const InputDecoration(
-                                                  contentPadding:
-                                                      EdgeInsets.zero,
-                                                  hintText: 'Search',
-                                                  hintStyle:
-                                                      TextStyle(fontSize: 12),
-                                                  prefixIcon:
-                                                      Icon(Icons.search),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                30.0)),
-                                                  ),
-                                                ),
-                                                onChanged: (text) {
-                                                  setState(() {
-                                                    final searchText =
-                                                        text.toLowerCase();
-                                                    subList =
-                                                        mainList.where((item) {
-                                                      return item.any((value) =>
-                                                          value
-                                                              .toString()
-                                                              .toLowerCase()
-                                                              .contains(
-                                                                  searchText));
-                                                    }).toList();
-                                                  });
-                                                },
-                                              )),
-                                          children: [
-                                            const Divider(),
-                                            SizedBox(
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height -
-                                                  200,
-                                              width: MediaQuery.of(context)
-                                                          .size
-                                                          .width <=
-                                                      1410
-                                                  ? 800
-                                                  : MediaQuery.of(context)
-                                                          .size
-                                                          .width -
-                                                      500,
-                                              child: Center(
-                                                child: Stack(
+                                      itemsData = _getSalesOrderItemsData();
+
+                                      return FutureBuilder(
+                                          future: itemsData,
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.waiting) {
+                                              return const Center(
+                                                  child:
+                                                      CircularProgressIndicator());
+                                            } else if (snapshot.hasError) {
+                                              return Center(
+                                                  child: Text(
+                                                      'Error: ${snapshot.error}'));
+                                            } else {
+                                              if (!initialLoad) {
+                                                bool salesOrderItemsFlag =
+                                                    handleSessionExpiredException(
+                                                        snapshot.data!,
+                                                        context);
+                                                if (!salesOrderItemsFlag) {
+                                                  final List<dynamic> data =
+                                                      snapshot.data!['items'];
+                                                  salesOrderItemsProvider
+                                                      .addItems(
+                                                          items: data,
+                                                          notify: false);
+                                                  salesOrderItemsProvider
+                                                      .setItemsHasMore(
+                                                          hasMore: snapshot
+                                                              .data!['hasMore'],
+                                                          notify: false);
+                                                }
+                                                initialLoad = true;
+                                              }
+                                              items =
+                                                  salesOrderItemsProvider.items;
+                                              itemsHasMore =
+                                                  salesOrderItemsProvider
+                                                      .hasMore;
+                                              List<dynamic> mainList =
+                                                  salesOrderItemsProvider.items;
+                                              List<dynamic> subList = mainList;
+                                              return StatefulBuilder(builder:
+                                                  (BuildContext context,
+                                                      StateSetter setState) {
+                                                return SimpleDialog(
+                                                  title: SizedBox(
+                                                      height: 30,
+                                                      width: 200,
+                                                      child: TextField(
+                                                        style: const TextStyle(
+                                                            fontSize: 12),
+                                                        decoration:
+                                                            const InputDecoration(
+                                                          contentPadding:
+                                                              EdgeInsets.zero,
+                                                          hintText: 'Search',
+                                                          hintStyle: TextStyle(
+                                                              fontSize: 12),
+                                                          prefixIcon: Icon(
+                                                              Icons.search),
+                                                          border:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        30.0)),
+                                                          ),
+                                                        ),
+                                                        onChanged: (text) {
+                                                          setState(() {
+                                                            final searchText =
+                                                                text.toLowerCase();
+                                                            subList = mainList
+                                                                .where((item) {
+                                                              return item.any(
+                                                                  (value) => value
+                                                                      .toString()
+                                                                      .toLowerCase()
+                                                                      .contains(
+                                                                          searchText));
+                                                            }).toList();
+                                                          });
+                                                        },
+                                                      )),
                                                   children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                              .symmetric(
-                                                          horizontal: 40),
-                                                      child: Scrollbar(
-                                                        thickness: 10,
-                                                        controller:
-                                                            _scrollController,
-                                                        thumbVisibility: true,
-                                                        child:
-                                                            SingleChildScrollView(
-                                                          controller:
-                                                              _scrollController,
-                                                          scrollDirection:
-                                                              Axis.horizontal,
-                                                          child: SizedBox(
-                                                            width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width <=
-                                                                    1410
-                                                                ? 700
-                                                                : MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width -
-                                                                    600,
-                                                            child: Column(
-                                                              children: [
-                                                                Container(
-                                                                  height: 56,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            20),
-                                                                    color: MediaQuery.of(context).platformBrightness ==
-                                                                            Brightness
-                                                                                .dark
-                                                                        ? Colors.grey[
-                                                                            900]
-                                                                        : Colors
-                                                                            .white,
-                                                                    boxShadow: [
-                                                                      BoxShadow(
-                                                                        color: Colors
-                                                                            .grey
-                                                                            .withOpacity(0.5),
-                                                                        spreadRadius:
-                                                                            0.5,
-                                                                        blurRadius:
-                                                                            1,
-                                                                        offset: const Offset(
-                                                                            0,
-                                                                            1),
-                                                                      ),
-                                                                    ],
-                                                                  ),
+                                                    const Divider(),
+                                                    SizedBox(
+                                                      height:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .height -
+                                                              200,
+                                                      width: MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .width <=
+                                                              1410
+                                                          ? 800
+                                                          : MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .width -
+                                                              500,
+                                                      child: Center(
+                                                        child: Stack(
+                                                          children: [
+                                                            Padding(
+                                                              padding: const EdgeInsets
+                                                                      .symmetric(
+                                                                  horizontal:
+                                                                      40),
+                                                              child: Scrollbar(
+                                                                thickness: 10,
+                                                                controller:
+                                                                    _scrollController,
+                                                                thumbVisibility:
+                                                                    true,
+                                                                child:
+                                                                    SingleChildScrollView(
+                                                                  controller:
+                                                                      _scrollController,
+                                                                  scrollDirection:
+                                                                      Axis.horizontal,
                                                                   child:
-                                                                      const Padding(
-                                                                    padding: EdgeInsets.only(
-                                                                        left:
-                                                                            15,
-                                                                        right:
-                                                                            15),
-                                                                    child: Row(
+                                                                      SizedBox(
+                                                                    width: MediaQuery.of(context).size.width <=
+                                                                            1410
+                                                                        ? 700
+                                                                        : MediaQuery.of(context).size.width -
+                                                                            600,
+                                                                    child:
+                                                                        Column(
                                                                       children: [
-                                                                        Expanded(
-                                                                            flex:
-                                                                                1,
-                                                                            child: Text('Item',
-                                                                                textAlign: TextAlign.left,
-                                                                                style: TextStyle(fontSize: 12, color: Colors.grey))),
-                                                                        Expanded(
-                                                                            flex:
-                                                                                2,
-                                                                            child: Text('Description',
-                                                                                textAlign: TextAlign.left,
-                                                                                style: TextStyle(fontSize: 12, color: Colors.grey))),
-                                                                        Expanded(
-                                                                            flex:
-                                                                                2,
-                                                                            child: Text('Group',
-                                                                                textAlign: TextAlign.left,
-                                                                                style: TextStyle(fontSize: 12, color: Colors.grey))),
-                                                                        Expanded(
-                                                                            flex:
-                                                                                1,
-                                                                            child: Text('Stock',
-                                                                                textAlign: TextAlign.right,
-                                                                                style: TextStyle(fontSize: 12, color: Colors.grey))),
-                                                                        Expanded(
-                                                                            flex:
-                                                                                1,
-                                                                            child: Text('Unit',
-                                                                                textAlign: TextAlign.right,
-                                                                                style: TextStyle(fontSize: 12, color: Colors.grey))),
-                                                                        Expanded(
-                                                                            flex:
-                                                                                1,
-                                                                            child: Text('Cost Method',
-                                                                                textAlign: TextAlign.right,
-                                                                                style: TextStyle(fontSize: 12, color: Colors.grey))),
-                                                                        Expanded(
-                                                                            flex:
-                                                                                1,
-                                                                            child: Text('Selling Price',
-                                                                                textAlign: TextAlign.right,
-                                                                                style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                        Container(
+                                                                          height:
+                                                                              56,
+                                                                          decoration:
+                                                                              BoxDecoration(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(20),
+                                                                            color: MediaQuery.of(context).platformBrightness == Brightness.dark
+                                                                                ? Colors.grey[900]
+                                                                                : Colors.white,
+                                                                            boxShadow: [
+                                                                              BoxShadow(
+                                                                                color: Colors.grey.withOpacity(0.5),
+                                                                                spreadRadius: 0.5,
+                                                                                blurRadius: 1,
+                                                                                offset: const Offset(0, 1),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                          child:
+                                                                              const Padding(
+                                                                            padding:
+                                                                                EdgeInsets.only(left: 15, right: 15),
+                                                                            child:
+                                                                                Row(
+                                                                              children: [
+                                                                                Expanded(flex: 1, child: Text('Item', textAlign: TextAlign.left, style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                                Expanded(flex: 2, child: Text('Description', textAlign: TextAlign.left, style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                                Expanded(flex: 2, child: Text('Group', textAlign: TextAlign.left, style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                                Expanded(flex: 1, child: Text('Stock', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                                Expanded(flex: 1, child: Text('Unit', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                                Expanded(flex: 1, child: Text('Cost Method', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                                Expanded(flex: 1, child: Text('Selling Price', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, color: Colors.grey))),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        const Divider(),
+                                                                        SizedBox(
+                                                                          height:
+                                                                              MediaQuery.of(context).size.height - 316,
+                                                                          width: MediaQuery.of(context).size.width <= 700
+                                                                              ? 700
+                                                                              : MediaQuery.of(context).size.width,
+                                                                          child:
+                                                                              webSalesOrderItems(
+                                                                            items:
+                                                                                subList,
+                                                                            clickable:
+                                                                                true,
+                                                                          ),
+                                                                        ),
+                                                                        const Divider(),
+                                                                        Stack(
+                                                                          children: [
+                                                                            Align(
+                                                                              alignment: Alignment.center,
+                                                                              child: Visibility(
+                                                                                visible: itemsHasMore,
+                                                                                child: ElevatedButton(
+                                                                                    onPressed: () async {
+                                                                                      setState(() {
+                                                                                        isLoadingMore = true;
+                                                                                      });
+                                                                                      final data = await SalesOrderService.getItemView(sessionId: userProvider.user!.sessionId, recordOffset: salesOrderItemsProvider.loadedItems);
+                                                                                      if (mounted) {
+                                                                                        bool salesOrderFlag = handleSessionExpiredException(data, context);
+                                                                                        if (!salesOrderFlag) {
+                                                                                          final List<dynamic> newSalesOrderItems = data['items'];
+                                                                                          salesOrderItemsProvider.setItemsHasMore(hasMore: data['hasMore']);
+                                                                                          salesOrderItemsProvider.incLoadedItems(resultLength: newSalesOrderItems.length);
+                                                                                          salesOrderItemsProvider.addItems(items: newSalesOrderItems);
+                                                                                          setState(() {
+                                                                                            items = salesOrderItemsProvider.items;
+                                                                                            isLoadingMore = false;
+                                                                                            itemsHasMore = salesOrderItemsProvider.hasMore;
+                                                                                          });
+                                                                                        }
+                                                                                      }
+                                                                                    },
+                                                                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, elevation: 0),
+                                                                                    child: isLoadingMore ? const CircularProgressIndicator() : const Text('Load More', style: TextStyle(color: Colors.grey))),
+                                                                              ),
+                                                                            ),
+                                                                            Align(
+                                                                              alignment: Alignment.center,
+                                                                              child: Visibility(visible: !itemsHasMore, child: const Text('End of Results')),
+                                                                            ),
+                                                                          ],
+                                                                        ),
                                                                       ],
                                                                     ),
                                                                   ),
                                                                 ),
-                                                                const Divider(),
-                                                                SizedBox(
-                                                                  height: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .height -
-                                                                      316,
-                                                                  width: MediaQuery.of(context)
-                                                                              .size
-                                                                              .width <=
-                                                                          700
-                                                                      ? 700
-                                                                      : MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .width,
-                                                                  child:
-                                                                      webSalesOrderItems(
-                                                                    items:
-                                                                        subList,
-                                                                    clickable:
-                                                                        true,
-                                                                  ),
-                                                                ),
-                                                                const Divider(),
-                                                                Stack(
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .center,
-                                                                      child:
-                                                                          Visibility(
-                                                                        visible:
-                                                                            itemsHasMore,
-                                                                        child: ElevatedButton(
-                                                                            onPressed: () async {
-                                                                              setState(() {
-                                                                                isLoadingMore = true;
-                                                                              });
-                                                                              final data = await SalesOrderService.getItemView(sessionId: userProvider.user!.sessionId, recordOffset: salesOrderItemsProvider.loadedItems);
-                                                                              if (mounted) {
-                                                                                bool salesOrderFlag = handleSessionExpiredException(data, context);
-                                                                                if (!salesOrderFlag) {
-                                                                                  final List<dynamic> newSalesOrderItems = data['items'];
-                                                                                  salesOrderItemsProvider.setItemsHasMore(hasMore: data['hasMore']);
-                                                                                  salesOrderItemsProvider.incLoadedItems(resultLength: newSalesOrderItems.length);
-                                                                                  salesOrderItemsProvider.addItems(items: newSalesOrderItems);
-                                                                                  setState(() {
-                                                                                    items = salesOrderItemsProvider.items;
-                                                                                    isLoadingMore = false;
-                                                                                    itemsHasMore = salesOrderItemsProvider.hasMore;
-                                                                                  });
-                                                                                }
-                                                                              }
-                                                                            },
-                                                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, elevation: 0),
-                                                                            child: isLoadingMore ? const CircularProgressIndicator() : const Text('Load More', style: TextStyle(color: Colors.grey))),
-                                                                      ),
-                                                                    ),
-                                                                    Align(
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .center,
-                                                                      child: Visibility(
-                                                                          visible:
-                                                                              !itemsHasMore,
-                                                                          child:
-                                                                              const Text('End of Results')),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ],
+                                                              ),
                                                             ),
-                                                          ),
+                                                            Visibility(
+                                                              visible: MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width <
+                                                                  860,
+                                                              child: Positioned(
+                                                                  left: 10,
+                                                                  bottom: 0,
+                                                                  child:
+                                                                      InkWell(
+                                                                    onTap: () {
+                                                                      _scrollController
+                                                                          .animateTo(
+                                                                        _scrollController.offset -
+                                                                            scrollAmount,
+                                                                        curve: Curves
+                                                                            .easeInOut,
+                                                                        duration:
+                                                                            const Duration(milliseconds: 500),
+                                                                      );
+                                                                    },
+                                                                    child: const Icon(
+                                                                        Icons
+                                                                            .arrow_circle_left_outlined),
+                                                                  )),
+                                                            ),
+                                                            Visibility(
+                                                              visible: MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width <
+                                                                  860,
+                                                              child: Positioned(
+                                                                  right: 10,
+                                                                  bottom: 0,
+                                                                  child:
+                                                                      InkWell(
+                                                                    onTap: () {
+                                                                      _scrollController
+                                                                          .animateTo(
+                                                                        _scrollController.offset +
+                                                                            scrollAmount,
+                                                                        curve: Curves
+                                                                            .easeInOut,
+                                                                        duration:
+                                                                            const Duration(milliseconds: 500),
+                                                                      );
+                                                                    },
+                                                                    child: const Icon(
+                                                                        Icons
+                                                                            .arrow_circle_right_outlined),
+                                                                  )),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ),
-                                                    Visibility(
-                                                      visible:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width <
-                                                              860,
-                                                      child: Positioned(
-                                                          left: 10,
-                                                          bottom: 0,
-                                                          child: InkWell(
-                                                            onTap: () {
-                                                              _scrollController
-                                                                  .animateTo(
-                                                                _scrollController
-                                                                        .offset -
-                                                                    scrollAmount,
-                                                                curve: Curves
-                                                                    .easeInOut,
-                                                                duration:
-                                                                    const Duration(
-                                                                        milliseconds:
-                                                                            500),
-                                                              );
-                                                            },
-                                                            child: const Icon(Icons
-                                                                .arrow_circle_left_outlined),
-                                                          )),
-                                                    ),
-                                                    Visibility(
-                                                      visible:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width <
-                                                              860,
-                                                      child: Positioned(
-                                                          right: 10,
-                                                          bottom: 0,
-                                                          child: InkWell(
-                                                            onTap: () {
-                                                              _scrollController
-                                                                  .animateTo(
-                                                                _scrollController
-                                                                        .offset +
-                                                                    scrollAmount,
-                                                                curve: Curves
-                                                                    .easeInOut,
-                                                                duration:
-                                                                    const Duration(
-                                                                        milliseconds:
-                                                                            500),
-                                                              );
-                                                            },
-                                                            child: const Icon(Icons
-                                                                .arrow_circle_right_outlined),
-                                                          )),
-                                                    ),
+                                                    const Divider(),
                                                   ],
-                                                ),
-                                              ),
-                                            ),
-                                            const Divider(),
-                                          ],
-                                        );
-                                      });
+                                                );
+                                              });
+                                            }
+                                          });
                                     });
                                 if (item != null) {
                                   setState(() {

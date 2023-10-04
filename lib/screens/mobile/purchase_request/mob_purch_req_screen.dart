@@ -43,7 +43,7 @@ class _MobilePurchReqScreenState extends State<MobilePurchReqScreen> {
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   ReqDataType _reqDataType = ReqDataType.reqDate;
   final ReqStatus _reqStatus = ReqStatus.pending;
   ReqSort _reqSort = ReqSort.asc;
@@ -204,6 +204,7 @@ class _MobilePurchReqScreenState extends State<MobilePurchReqScreen> {
           notify: false);
     }
     brightness = PlatformDispatcher.instance.platformBrightness;
+    hasMore = purchReqProvider.hasMore;
   }
 
   @override

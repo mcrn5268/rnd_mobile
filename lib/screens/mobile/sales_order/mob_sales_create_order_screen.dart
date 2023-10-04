@@ -132,6 +132,19 @@ class _MobileSalesCreateOrderScreenState
   DateTime _salesOrderDelvfocusedDay = DateTime.now();
   DateTime? _salesOrderDelvDate;
 
+  late Future itemsData;
+  bool initialLoad = false;
+
+  Future<dynamic> _getSalesOrderItemsData() {
+    if (salesOrderItemsProvider.didLoadDataAlready) {
+      initialLoad = true;
+      return Future.value();
+    } else {
+      return SalesOrderService.getItemView(
+          sessionId: userProvider.user!.sessionId);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -139,8 +152,6 @@ class _MobileSalesCreateOrderScreenState
     _conversionFactorController.text = '1';
     salesOrderItemsProvider =
         Provider.of<ItemsProvider>(context, listen: false);
-    items = salesOrderItemsProvider.items;
-    itemsHasMore = salesOrderItemsProvider.hasMore;
     _itemIsActive.add(true);
     addItem();
     brightness = PlatformDispatcher.instance.platformBrightness;
@@ -1739,140 +1750,192 @@ class _MobileSalesCreateOrderScreenState
                                           final item = await showDialog(
                                               context: context,
                                               builder: (BuildContext context) {
-                                                List<dynamic> mainList =
-                                                    salesOrderItemsProvider
-                                                        .items;
-                                                List<dynamic> subList =
-                                                    mainList;
-                                                return StatefulBuilder(builder:
-                                                    (BuildContext context,
-                                                        StateSetter setState) {
-                                                  return SimpleDialog(
-                                                    title: SizedBox(
-                                                        height: 30,
-                                                        width: 200,
-                                                        child: TextField(
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize: 12),
-                                                          decoration:
-                                                              const InputDecoration(
-                                                            contentPadding:
-                                                                EdgeInsets.zero,
-                                                            hintText: 'Search',
-                                                            hintStyle:
-                                                                TextStyle(
-                                                                    fontSize:
-                                                                        12),
-                                                            prefixIcon: Icon(
-                                                                Icons.search),
-                                                            border:
-                                                                OutlineInputBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          30.0)),
-                                                            ),
-                                                          ),
-                                                          onChanged: (text) {
-                                                            setState(() {
-                                                              final searchText =
-                                                                  text.toLowerCase();
-                                                              subList = mainList
-                                                                  .where(
-                                                                      (item) {
-                                                                return item.any((value) => value
-                                                                    .toString()
-                                                                    .toLowerCase()
-                                                                    .contains(
-                                                                        searchText));
-                                                              }).toList();
-                                                            });
-                                                          },
-                                                        )),
-                                                    children: [
-                                                      const Divider(),
-                                                      SizedBox(
-                                                        height: MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .height -
-                                                            200,
-                                                        width: MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .width -
-                                                            100,
-                                                        child: Column(
-                                                          children: [
-                                                            Expanded(
-                                                              child:
-                                                                  mobileSalesOrderItems(
-                                                                items: subList,
-                                                                clickable: true,
-                                                              ),
-                                                            ),
-                                                            const Divider(),
-                                                            Stack(
-                                                              children: [
-                                                                Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child:
-                                                                      Visibility(
-                                                                    visible:
-                                                                        itemsHasMore,
-                                                                    child: ElevatedButton(
-                                                                        onPressed: () async {
-                                                                          setState(
-                                                                              () {
-                                                                            isLoadingMore =
-                                                                                true;
-                                                                          });
-                                                                          final data = await SalesOrderService.getItemView(
-                                                                              sessionId: userProvider.user!.sessionId,
-                                                                              recordOffset: salesOrderItemsProvider.loadedItems);
-                                                                          if (mounted) {
-                                                                            bool
-                                                                                salesOrderFlag =
-                                                                                handleSessionExpiredException(data, context);
-                                                                            if (!salesOrderFlag) {
-                                                                              final List<dynamic> newSalesOrderItems = data['items'];
-                                                                              salesOrderItemsProvider.setItemsHasMore(hasMore: data['hasMore']);
-                                                                              salesOrderItemsProvider.incLoadedItems(resultLength: newSalesOrderItems.length);
-                                                                              salesOrderItemsProvider.addItems(items: newSalesOrderItems);
-                                                                              setState(() {
-                                                                                items = salesOrderItemsProvider.items;
-                                                                                isLoadingMore = false;
-                                                                                itemsHasMore = salesOrderItemsProvider.hasMore;
-                                                                              });
-                                                                            }
-                                                                          }
-                                                                        },
-                                                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, elevation: 0),
-                                                                        child: isLoadingMore ? const CircularProgressIndicator() : const Text('Load More', style: TextStyle(color: Colors.grey))),
+                                                itemsData =
+                                                    _getSalesOrderItemsData();
+
+                                                return FutureBuilder(
+                                                    future: itemsData,
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (snapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return const Center(
+                                                            child:
+                                                                CircularProgressIndicator());
+                                                      } else if (snapshot
+                                                          .hasError) {
+                                                        return Center(
+                                                            child: Text(
+                                                                'Error: ${snapshot.error}'));
+                                                      } else {
+                                                        if (!initialLoad) {
+                                                          bool
+                                                              salesOrderItemsFlag =
+                                                              handleSessionExpiredException(
+                                                                  snapshot
+                                                                      .data!,
+                                                                  context);
+                                                          if (!salesOrderItemsFlag) {
+                                                            final List<dynamic>
+                                                                data =
+                                                                snapshot.data![
+                                                                    'items'];
+                                                            salesOrderItemsProvider
+                                                                .addItems(
+                                                                    items: data,
+                                                                    notify:
+                                                                        false);
+                                                            salesOrderItemsProvider
+                                                                .setItemsHasMore(
+                                                                    hasMore: snapshot
+                                                                            .data![
+                                                                        'hasMore'],
+                                                                    notify:
+                                                                        false);
+                                                          }
+                                                          initialLoad = true;
+                                                        }
+                                                        items =
+                                                            salesOrderItemsProvider
+                                                                .items;
+                                                        itemsHasMore =
+                                                            salesOrderItemsProvider
+                                                                .hasMore;
+                                                        List<dynamic> mainList =
+                                                            salesOrderItemsProvider
+                                                                .items;
+                                                        List<dynamic> subList =
+                                                            mainList;
+                                                        return StatefulBuilder(
+                                                            builder: (BuildContext
+                                                                    context,
+                                                                StateSetter
+                                                                    setState) {
+                                                          return SimpleDialog(
+                                                            title: SizedBox(
+                                                                height: 30,
+                                                                width: 200,
+                                                                child:
+                                                                    TextField(
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          12),
+                                                                  decoration:
+                                                                      const InputDecoration(
+                                                                    contentPadding:
+                                                                        EdgeInsets
+                                                                            .zero,
+                                                                    hintText:
+                                                                        'Search',
+                                                                    hintStyle: TextStyle(
+                                                                        fontSize:
+                                                                            12),
+                                                                    prefixIcon:
+                                                                        Icon(Icons
+                                                                            .search),
+                                                                    border:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.all(
+                                                                              Radius.circular(30.0)),
+                                                                    ),
                                                                   ),
+                                                                  onChanged:
+                                                                      (text) {
+                                                                    setState(
+                                                                        () {
+                                                                      final searchText =
+                                                                          text.toLowerCase();
+                                                                      subList =
+                                                                          mainList
+                                                                              .where((item) {
+                                                                        return item.any((value) => value
+                                                                            .toString()
+                                                                            .toLowerCase()
+                                                                            .contains(searchText));
+                                                                      }).toList();
+                                                                    });
+                                                                  },
+                                                                )),
+                                                            children: [
+                                                              const Divider(),
+                                                              SizedBox(
+                                                                height: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .height -
+                                                                    200,
+                                                                width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width -
+                                                                    100,
+                                                                child: Column(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child:
+                                                                          mobileSalesOrderItems(
+                                                                        items:
+                                                                            subList,
+                                                                        clickable:
+                                                                            true,
+                                                                      ),
+                                                                    ),
+                                                                    const Divider(),
+                                                                    Stack(
+                                                                      children: [
+                                                                        Align(
+                                                                          alignment:
+                                                                              Alignment.center,
+                                                                          child:
+                                                                              Visibility(
+                                                                            visible:
+                                                                                itemsHasMore,
+                                                                            child: ElevatedButton(
+                                                                                onPressed: () async {
+                                                                                  setState(() {
+                                                                                    isLoadingMore = true;
+                                                                                  });
+                                                                                  final data = await SalesOrderService.getItemView(sessionId: userProvider.user!.sessionId, recordOffset: salesOrderItemsProvider.loadedItems);
+                                                                                  if (mounted) {
+                                                                                    bool salesOrderFlag = handleSessionExpiredException(data, context);
+                                                                                    if (!salesOrderFlag) {
+                                                                                      final List<dynamic> newSalesOrderItems = data['items'];
+                                                                                      salesOrderItemsProvider.setItemsHasMore(hasMore: data['hasMore']);
+                                                                                      salesOrderItemsProvider.incLoadedItems(resultLength: newSalesOrderItems.length);
+                                                                                      salesOrderItemsProvider.addItems(items: newSalesOrderItems);
+                                                                                      setState(() {
+                                                                                        items = salesOrderItemsProvider.items;
+                                                                                        isLoadingMore = false;
+                                                                                        itemsHasMore = salesOrderItemsProvider.hasMore;
+                                                                                      });
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, elevation: 0),
+                                                                                child: isLoadingMore ? const CircularProgressIndicator() : const Text('Load More', style: TextStyle(color: Colors.grey))),
+                                                                          ),
+                                                                        ),
+                                                                        Align(
+                                                                          alignment:
+                                                                              Alignment.center,
+                                                                          child: Visibility(
+                                                                              visible: !itemsHasMore,
+                                                                              child: const Text('End of Results')),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const Divider(),
+                                                                  ],
                                                                 ),
-                                                                Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child: Visibility(
-                                                                      visible:
-                                                                          !itemsHasMore,
-                                                                      child: const Text(
-                                                                          'End of Results')),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            const Divider(),
-                                                          ],
-                                                        ),
-                                                      )
-                                                    ],
-                                                  );
-                                                });
+                                                              )
+                                                            ],
+                                                          );
+                                                        });
+                                                      }
+                                                    });
                                               });
                                           if (item != null) {
                                             setState(() {

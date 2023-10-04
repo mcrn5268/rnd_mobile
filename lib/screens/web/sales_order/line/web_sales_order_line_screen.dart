@@ -481,7 +481,8 @@ class WebSalesOrderLineScreen extends StatelessWidget {
                         }, childCount: data.length))
                       ]);
                     } else {
-                      return const Center(child: Text('An Error Has Occured'));
+                      return const Center(
+                          child: Text('An Error Has Occured or line is empty'));
                     }
                   }
                 }),

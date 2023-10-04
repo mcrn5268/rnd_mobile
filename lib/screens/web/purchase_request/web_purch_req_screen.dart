@@ -43,7 +43,7 @@ class _WebPurchReqScreenState extends State<WebPurchReqScreen> {
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   bool _showFilter = false;
   ReqDataType _reqDataType = ReqDataType.reqDate;
   final ReqStatus _reqStatus = ReqStatus.pending;
@@ -185,6 +185,7 @@ class _WebPurchReqScreenState extends State<WebPurchReqScreen> {
           sort: _reqSort,
           notify: false);
     }
+    hasMore = purchReqProvider.hasMore;
   }
 
   @override

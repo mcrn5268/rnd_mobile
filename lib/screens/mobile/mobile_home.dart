@@ -114,46 +114,45 @@ class _MobileHomeState extends State<MobileHome>
       // webNotificationStream();
     } else {
       // when user taps notif
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        setState(() {
-          futures = [
-            _getPurchReqData(button: true),
-            _getPurchOrderData(button: true),
-            // _getSalesOrderData(button: true),
-            // _getSalesOrderItemsData(button: true),
-          ];
+        FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+          setState(() {
+            futures = [
+              _getPurchReqData(button: true),
+              _getPurchOrderData(button: true),
+              // _getSalesOrderData(button: true),
+              // _getSalesOrderItemsData(button: true),
+            ];
+          });
+          if (message.data['type'] == 'PR') {
+            String requestNumber = message.data['preqNum'];
+            purchReqProvider.setReqNumber(
+                reqNumber: int.parse(requestNumber), notify: true);
+            indexNotifier = ValueNotifier(0);
+          }
+          if (message.data['type'] == 'PO') {
+            String orderNumber = message.data['poNum'];
+            purchOrderProvider.setOrderNumber(
+                orderNumber: int.parse(orderNumber), notify: true);
+            indexNotifier = ValueNotifier(1);
+          }
         });
-        if (message.data['type'] == 'PR') {
-          String requestNumber = message.data['preqNum'];
-          purchReqProvider.setReqNumber(
-              reqNumber: int.parse(requestNumber), notify: true);
-          indexNotifier = ValueNotifier(0);
-        }
-        if (message.data['type'] == 'PO') {
-          String orderNumber = message.data['poNum'];
-          purchOrderProvider.setOrderNumber(
-              orderNumber: int.parse(orderNumber), notify: true);
-          indexNotifier = ValueNotifier(1);
-        }
-      });
 
-      //foreground
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        final type = message.data['type'];
-        print('foreground: $type');
-        player.play('audio/notif_sound2.mp3');
-        showToastMessage(
-            type == 'PR' ? 'New Purchase Request!' : 'New Purchase Order!');
-        refreshIconIndicatorProvider.setShow(show: true);
-        notifProvider.addNotification({
-          'type': type,
-          'timestamp': Timestamp.now().millisecondsSinceEpoch,
-          'seen': false,
-          if (type == 'group') 'group': message.data['group'],
-          if (type == 'PR') 'preqNum': message.data['preqNum'],
-          if (type == 'PO') 'poNum': message.data['poNum'],
+        //foreground
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          final type = message.data['type'];
+          player.play('audio/notif_sound2.mp3');
+          showToastMessage(
+              type == 'PR' ? 'New Purchase Request!' : 'New Purchase Order!');
+          refreshIconIndicatorProvider.setShow(show: true);
+          notifProvider.addNotification({
+            'type': type,
+            'timestamp': Timestamp.now().millisecondsSinceEpoch,
+            'seen': false,
+            if (type == 'group') 'group': message.data['group'],
+            if (type == 'PR') 'preqNum': message.data['preqNum'],
+            if (type == 'PO') 'poNum': message.data['poNum'],
+          });
         });
-      });
     }
   }
 
@@ -419,7 +418,10 @@ class _MobileHomeState extends State<MobileHome>
                             ];
                           }
                         },
-                        icon: const Icon(Icons.notifications),
+                        icon: const Icon(
+                          Icons.notifications,
+                          color: Colors.white,
+                        ),
                         offset: const Offset(0, 50),
                         elevation: 4,
                         shape: RoundedRectangleBorder(
@@ -927,6 +929,8 @@ class _MobileHomeState extends State<MobileHome>
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         purchReqProvider.setList(
                             purchaseRequestList: data, notify: true);
+                        purchReqProvider.setItemsHasMore(
+                            hasMore: snapshot.data![0]['hasMore']);
                       });
                     }
                   } else {
@@ -944,6 +948,8 @@ class _MobileHomeState extends State<MobileHome>
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         purchOrderProvider.setList(
                             purchaseOrderList: data2, notify: true);
+                        purchOrderProvider.setItemsHasMore(
+                            hasMore: snapshot.data![1]['hasMore']);
                       });
                     }
                   } else {

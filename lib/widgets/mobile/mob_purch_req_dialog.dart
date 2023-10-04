@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:rnd_mobile/widgets/item_details_row.dart';
 
 Future<void> purchReqShowDialog(
     {required BuildContext context, required PurchaseRequest request}) async {
+  print(request);
   var requestDate = DateFormat.yMMMd().format(request.requestDate);
   var neededDate = DateFormat.yMMMd().format(request.neededDate);
   showDialog(
@@ -19,7 +21,10 @@ Future<void> purchReqShowDialog(
         Column(
           children: [
             Container(
-              color: Colors.grey[850],
+              color: PlatformDispatcher.instance.platformBrightness ==
+                      Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.grey[300],
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Stack(
@@ -44,6 +49,16 @@ Future<void> purchReqShowDialog(
             ItemDetailsRowWidget(
               title: 'Request Number',
               value: request.preqNum.toString(),
+            ),
+            const Divider(),
+            ItemDetailsRowWidget(
+              title: 'Warehouse',
+              value: request.warehouseDescription.toString(),
+            ),
+            const Divider(),
+            ItemDetailsRowWidget(
+              title: 'Reason',
+              value: request.reason.toString(),
             ),
             const Divider(),
             ItemDetailsRowWidget(title: 'Request Date', value: requestDate),
@@ -78,7 +93,11 @@ Future<void> purchReqShowDialog(
                     child: Column(
                       children: [
                         Container(
-                          color: Colors.grey[850],
+                          color:
+                              PlatformDispatcher.instance.platformBrightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[850]
+                                  : Colors.grey[300],
                           child: const Padding(
                             padding: EdgeInsets.only(top: 10, bottom: 10),
                             child: Row(
@@ -159,7 +178,9 @@ Future<void> purchReqShowDialog(
                                         Expanded(
                                             flex: 1,
                                             child: Text(
-                                              data[index][13] ?? '-',
+                                              (data[index][13] ?? '-')
+                                                  .toString()
+                                                  .trim(),
                                               style: const TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.grey),

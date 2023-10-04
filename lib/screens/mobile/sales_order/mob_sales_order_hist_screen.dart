@@ -33,7 +33,7 @@ class _MobileSalesOrderHistScreenState
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   OrderDataType _orderDataType = OrderDataType.soDate;
   OrderStatus _orderStatus = OrderStatus.all;
   OrderSort _orderSort = OrderSort.dsc;
@@ -163,8 +163,8 @@ class _MobileSalesOrderHistScreenState
     setState(() {
       isLoadingMore = false;
       _loadedItemsCount += newSalesOrders.length;
-      Provider.of<SalesOrderProvider>(context, listen: false)
-          .addItems(salesOrders: newSalesOrders);
+      salesOrderProvider.setItemsHasMore(hasMore: hasMore, notify: false);
+      salesOrderProvider.addItems(salesOrders: newSalesOrders);
     });
   }
 
@@ -214,9 +214,12 @@ class _MobileSalesOrderHistScreenState
             if (!salesOrderFlag) {
               final List<SalesOrder> data = snapshot.data!['salesOrders'];
               salesOrderProvider.addItems(salesOrders: data, notify: false);
+              salesOrderProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
           }
+          hasMore = salesOrderProvider.hasMore;
           return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(children: [

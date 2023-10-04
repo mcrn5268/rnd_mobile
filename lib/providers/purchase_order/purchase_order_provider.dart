@@ -5,10 +5,12 @@ class PurchOrderProvider extends ChangeNotifier {
   List<PurchaseOrder> _purchaseOrderList = [];
   int _orderNumber = -1;
   String? _search;
+  bool _hasMore = false;
 
   List<PurchaseOrder> get purchaseOrderList => _purchaseOrderList;
   int get orderNumber => _orderNumber;
   String? get search => _search;
+  bool get hasMore => _hasMore;
   int get purchOrderPending => _purchaseOrderList
       .where((purchOrder) => !purchOrder.isFinal && !purchOrder.isCancelled)
       .length;
@@ -92,6 +94,20 @@ class PurchOrderProvider extends ChangeNotifier {
 
   void removeSearch({bool notify = true}) {
     _search = null;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  void setItemsHasMore({required bool hasMore, bool notify = true}) {
+    _hasMore = hasMore;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  void removeItemsHasMore({bool notify = true}) {
+    _hasMore = false;
     if (notify) {
       notifyListeners();
     }

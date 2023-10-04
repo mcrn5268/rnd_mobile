@@ -32,7 +32,7 @@ class _WebPurchOrderHistScreenState extends State<WebPurchOrderHistScreen> {
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   bool _showFilter = false;
   OrderDataType _orderDataType = OrderDataType.poDate;
   OrderStatus _orderStatus = OrderStatus.all;
@@ -147,9 +147,7 @@ class _WebPurchOrderHistScreenState extends State<WebPurchOrderHistScreen> {
 
   void _loadMore() async {
     late List<PurchaseOrder> newPurchaseOrders;
-    if (Provider.of<PurchOrderHistFilterProvider>(context, listen: false)
-            .status ==
-        OrderStatus.pending) {
+    if (orderFilterProvider.status == OrderStatus.pending) {
       final data = await PurchOrderService.getPurchOrderView(
         sessionId: userProvider.user!.sessionId,
         recordOffset: _loadedItemsCount,
@@ -181,8 +179,8 @@ class _WebPurchOrderHistScreenState extends State<WebPurchOrderHistScreen> {
     setState(() {
       isLoadingMore = false;
       _loadedItemsCount += newPurchaseOrders.length;
-      Provider.of<PurchOrderProvider>(context, listen: false)
-          .addItems(purchOrders: newPurchaseOrders);
+      purchOrderProvider.setItemsHasMore(hasMore: hasMore, notify: false);
+      purchOrderProvider.addItems(purchOrders: newPurchaseOrders);
     });
   }
 
@@ -231,8 +229,11 @@ class _WebPurchOrderHistScreenState extends State<WebPurchOrderHistScreen> {
             if (!purchOrderFlag) {
               final List<PurchaseOrder> data = snapshot.data!['purchaseOrders'];
               purchOrderProvider.addItems(purchOrders: data, notify: false);
+              purchOrderProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
+            hasMore = purchOrderProvider.hasMore;
           }
 
           return Consumer<PurchOrderProvider>(

@@ -5,10 +5,12 @@ class SalesOrderProvider extends ChangeNotifier {
   List<SalesOrder> _salesOrderList = [];
   int _orderNumber = -1;
   String? _search;
+  bool _hasMore = false;
 
   List<SalesOrder> get salesOrderList => _salesOrderList;
   int get orderNumber => _orderNumber;
   String? get search => _search;
+  bool get hasMore => _hasMore;
 
   void setOrderNumber({required int orderNumber, bool notify = false}) {
     _orderNumber = orderNumber;
@@ -87,6 +89,20 @@ class SalesOrderProvider extends ChangeNotifier {
 
   void removeSearch({bool notify = true}) {
     _search = null;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  void setItemsHasMore({required bool hasMore, bool notify = true}) {
+    _hasMore = hasMore;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  void removeItemsHasMore({bool notify = true}) {
+    _hasMore = false;
     if (notify) {
       notifyListeners();
     }

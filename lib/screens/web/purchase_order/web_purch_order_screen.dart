@@ -43,7 +43,7 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   bool _showFilter = false;
   OrderDataType _orderDataType = OrderDataType.poDate;
   final OrderStatus _orderStatus = OrderStatus.pending;
@@ -192,6 +192,7 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
           sort: _orderSort,
           notify: false);
     }
+    hasMore = purchOrderProvider.hasMore;
   }
 
   @override

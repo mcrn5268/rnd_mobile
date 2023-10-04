@@ -26,8 +26,13 @@ class _MobileItemsScreenState extends State<MobileItemsScreen> {
   bool fromSearch = false;
 
   Future<dynamic> _getSalesOrderItemsData() {
-    return SalesOrderService.getItemView(
-        sessionId: userProvider.user!.sessionId);
+    if (salesOrderItemsProvider.didLoadDataAlready) {
+      initialLoad = true;
+      return Future.value();
+    } else {
+      return SalesOrderService.getItemView(
+          sessionId: userProvider.user!.sessionId);
+    }
   }
 
   @override
@@ -37,9 +42,6 @@ class _MobileItemsScreenState extends State<MobileItemsScreen> {
     salesOrderItemsProvider =
         Provider.of<ItemsProvider>(context, listen: false);
     itemsData = _getSalesOrderItemsData();
-    items = salesOrderItemsProvider.items;
-    itemsHasMore = salesOrderItemsProvider.hasMore;
-    searchValue = salesOrderItemsProvider.search;
   }
 
   @override
@@ -58,9 +60,14 @@ class _MobileItemsScreenState extends State<MobileItemsScreen> {
             if (!salesOrderItemsFlag) {
               final List<dynamic> data = snapshot.data!['items'];
               salesOrderItemsProvider.addItems(items: data, notify: false);
+              salesOrderItemsProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
           }
+          items = salesOrderItemsProvider.items;
+          itemsHasMore = salesOrderItemsProvider.hasMore;
+          searchValue = salesOrderItemsProvider.search;
           return Consumer<ItemsProvider>(
               builder: (context, salesOrderItemsProvider, _) {
             String? searchValue = salesOrderItemsProvider.search;

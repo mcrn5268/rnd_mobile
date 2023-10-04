@@ -30,7 +30,7 @@ class _WebPurchReqHistScreenState extends State<WebPurchReqHistScreen> {
   bool confCanc = false;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   bool _showFilter = false;
   ReqDataType _reqDataType = ReqDataType.reqDate;
   ReqStatus _reqStatus = ReqStatus.all;
@@ -137,9 +137,7 @@ class _WebPurchReqHistScreenState extends State<WebPurchReqHistScreen> {
 
   void _loadMore() async {
     late List<PurchaseRequest> newPurchaseRequests;
-    if (Provider.of<PurchReqHistFilterProvider>(context, listen: false)
-            .status ==
-        ReqStatus.pending) {
+    if (reqHistFilterProvider.status == ReqStatus.pending) {
       final data = await PurchReqService.getPurchReqView(
         sessionId: userProvider.user!.sessionId,
         recordOffset: _loadedItemsCount,
@@ -171,8 +169,8 @@ class _WebPurchReqHistScreenState extends State<WebPurchReqHistScreen> {
     setState(() {
       isLoadingMore = false;
       _loadedItemsCount += newPurchaseRequests.length;
-      Provider.of<PurchReqProvider>(context, listen: false)
-          .addItems(purchReqs: newPurchaseRequests);
+      purchReqProvider.setItemsHasMore(hasMore: hasMore, notify: false);
+      purchReqProvider.addItems(purchReqs: newPurchaseRequests);
     });
   }
 
@@ -221,9 +219,12 @@ class _WebPurchReqHistScreenState extends State<WebPurchReqHistScreen> {
               final List<PurchaseRequest> data =
                   snapshot.data!['purchaseRequests'];
               purchReqProvider.addItems(purchReqs: data, notify: false);
+              purchReqProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
           }
+          hasMore = purchReqProvider.hasMore;
 
           return Consumer<PurchReqProvider>(
               builder: (context, purchaseRequestsProvider, _) {

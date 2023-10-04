@@ -479,7 +479,8 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                           ];
                         }
                       },
-                      icon: const Icon(Icons.notifications),
+                      icon:
+                          const Icon(Icons.notifications, color: Colors.white),
                       offset: const Offset(0, 50),
                       elevation: 4,
                       shape: RoundedRectangleBorder(
@@ -696,6 +697,8 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           purchReqProvider.setList(
                               purchaseRequestList: data, notify: true);
+                          purchReqProvider.setItemsHasMore(
+                              hasMore: snapshot.data![0]['hasMore']);
                         });
                       }
                     } else {
@@ -713,6 +716,8 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           purchOrderProvider.setList(
                               purchaseOrderList: data2, notify: true);
+                          purchOrderProvider.setItemsHasMore(
+                              hasMore: snapshot.data![1]['hasMore']);
                         });
                       }
                     } else {

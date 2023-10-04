@@ -38,8 +38,8 @@ class _MobileItemsMainState extends State<MobileItemsMain> {
                     child: ClipPath(
                       clipper: AppBarClipper(),
                       child: Container(
-                                  // color: Colors.deepPurple,
-                                  color: Colors.blueGrey,
+                        // color: Colors.deepPurple,
+                        color: Colors.blueGrey,
                         height: 50,
                       ),
                     ),
@@ -65,7 +65,10 @@ class _MobileItemsMainState extends State<MobileItemsMain> {
                         width: MediaQuery.of(context).size.width - 50,
                         child: TextField(
                           controller: _searchController,
-                          style: const TextStyle(fontSize: 12),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
                           decoration: InputDecoration(
                             contentPadding:
                                 const EdgeInsets.symmetric(vertical: 18),

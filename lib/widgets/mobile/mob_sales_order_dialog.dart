@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,10 @@ Future<void> salesOrderShowDialog(
         Column(
           children: [
             Container(
-              color: Colors.grey[850],
+              color: PlatformDispatcher.instance.platformBrightness ==
+                      Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.grey[300],
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Stack(
@@ -77,7 +81,10 @@ Future<void> salesOrderShowDialog(
         Column(
           children: [
             Container(
-              color: Colors.grey[850],
+              color: PlatformDispatcher.instance.platformBrightness ==
+                      Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.grey[300],
               child: const Padding(
                 padding: EdgeInsets.only(top: 10, bottom: 10),
                 child: Row(

@@ -313,7 +313,10 @@ class WebPurchReqLineScreen extends StatelessWidget {
                                                   color: Colors.grey))),
                                       Expanded(
                                           flex: 1,
-                                          child: Text(data[index][13] ?? '-',
+                                          child: Text(
+                                              (data[index][13] ?? '-')
+                                                  .toString()
+                                                  .trim(),
                                               textAlign: TextAlign.right,
                                               style: const TextStyle(
                                                   fontSize: 12,
@@ -330,7 +333,8 @@ class WebPurchReqLineScreen extends StatelessWidget {
                         }, childCount: data.length))
                       ]);
                     } else {
-                      return const Center(child: Text('An Error Has Occured'));
+                      return const Center(
+                          child: Text('An Error Has Occured or line is empty'));
                     }
                   }
                 }),

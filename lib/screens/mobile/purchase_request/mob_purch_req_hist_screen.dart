@@ -31,7 +31,7 @@ class _MobilePurchReqHistScreenState extends State<MobilePurchReqHistScreen> {
   late final PurchReqProvider purchReqProvider;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   ReqDataType _reqDataType = ReqDataType.reqDate;
   ReqStatus _reqStatus = ReqStatus.all;
   ReqSort _reqSort = ReqSort.asc;
@@ -136,9 +136,7 @@ class _MobilePurchReqHistScreenState extends State<MobilePurchReqHistScreen> {
 
   void _loadMore() async {
     late List<PurchaseRequest> newPurchaseRequests;
-    if (Provider.of<PurchReqHistFilterProvider>(context, listen: false)
-            .status ==
-        ReqStatus.pending) {
+    if (reqHistFilterProvider.status == ReqStatus.pending) {
       final data = await PurchReqService.getPurchReqView(
         sessionId: userProvider.user!.sessionId,
         recordOffset: _loadedItemsCount,
@@ -170,8 +168,8 @@ class _MobilePurchReqHistScreenState extends State<MobilePurchReqHistScreen> {
     setState(() {
       isLoadingMore = false;
       _loadedItemsCount += newPurchaseRequests.length;
-      Provider.of<PurchReqProvider>(context, listen: false)
-          .addItems(purchReqs: newPurchaseRequests);
+      purchReqProvider.setItemsHasMore(hasMore: hasMore, notify: false);
+      purchReqProvider.addItems(purchReqs: newPurchaseRequests);
     });
   }
 
@@ -221,9 +219,12 @@ class _MobilePurchReqHistScreenState extends State<MobilePurchReqHistScreen> {
               final List<PurchaseRequest> data =
                   snapshot.data!['purchaseRequests'];
               purchReqProvider.addItems(purchReqs: data, notify: false);
+              purchReqProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
           }
+          hasMore = purchReqProvider.hasMore;
           return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(children: [

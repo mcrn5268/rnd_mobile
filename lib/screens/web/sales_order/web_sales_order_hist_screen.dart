@@ -32,7 +32,7 @@ class _WebSalesOrderHistScreenState extends State<WebSalesOrderHistScreen> {
   int? selectedItem;
   int _loadedItemsCount = 15;
   bool isLoadingMore = false;
-  bool hasMore = true;
+  late bool hasMore;
   bool _showFilter = false;
   OrderDataType _orderDataType = OrderDataType.soDate;
   OrderStatus _orderStatus = OrderStatus.all;
@@ -164,8 +164,8 @@ class _WebSalesOrderHistScreenState extends State<WebSalesOrderHistScreen> {
     setState(() {
       isLoadingMore = false;
       _loadedItemsCount += newSalesOrders.length;
-      Provider.of<SalesOrderProvider>(context, listen: false)
-          .addItems(salesOrders: newSalesOrders);
+      salesOrderProvider.setItemsHasMore(hasMore: hasMore, notify: false);
+      salesOrderProvider.addItems(salesOrders: newSalesOrders);
     });
   }
 
@@ -215,9 +215,12 @@ class _WebSalesOrderHistScreenState extends State<WebSalesOrderHistScreen> {
             if (!salesOrderFlag) {
               final List<SalesOrder> data = snapshot.data!['salesOrders'];
               salesOrderProvider.addItems(salesOrders: data, notify: false);
+              salesOrderProvider.setItemsHasMore(
+                  hasMore: snapshot.data!['hasMore'], notify: false);
             }
             initialLoad = true;
           }
+          hasMore = salesOrderProvider.hasMore;
           return Consumer<SalesOrderProvider>(
               builder: (context, salesOrdersProvider, _) {
             List<SalesOrder> purchaseListPending =
