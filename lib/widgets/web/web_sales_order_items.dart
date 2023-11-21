@@ -119,16 +119,16 @@ Widget webSalesOrderItems(
                                 ? Colors.red
                                 : Colors.grey,
                       ),
-                      if (clickable) ...[
-                        const SizedBox(
-                          width: 10,
-                          child: Icon(Icons.arrow_right_outlined),
-                        ),
-                      ] else ...[
-                        const SizedBox(
-                          width: 10,
-                        ),
-                      ]
+                      // if (clickable) ...[
+                      //   const SizedBox(
+                      //     width: 10,
+                      //     child: Icon(Icons.arrow_right_outlined),
+                      //   ),
+                      // ] else ...[
+                      //   const SizedBox(
+                      //     width: 10,
+                      //   ),
+                      // ]
                     ],
                   ),
                 ),

@@ -76,13 +76,13 @@ class MobileReusableColumn extends StatelessWidget {
               secondRowFirstText,
               textAlign: TextAlign.left,
             ),
-            const Spacer(),
-            if (clickable == false) ...[
-              const SizedBox(width: 15),
-            ] else ...[
-              const SizedBox(
-                  width: 15, child: Icon(Icons.arrow_right_outlined)),
-            ]
+            // const Spacer(),
+            // if (clickable == false) ...[
+            //   const SizedBox(width: 15),
+            // ] else ...[
+            //   const SizedBox(
+            //       width: 15, child: Icon(Icons.arrow_right_outlined)),
+            // ]
           ],
         ),
         const SizedBox(height: 10),

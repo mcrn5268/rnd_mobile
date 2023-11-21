@@ -142,11 +142,13 @@ Future<void> purchOrderShowDialog(
                 return const CircularProgressIndicator();
               } else {
                 List<dynamic> data = snapshot.data!;
-                if (context.mounted) {
-                  bool purchOrderFlag =
-                      handleSessionExpiredException(data[0], context);
-                  if (purchOrderFlag) {
-                    return Container();
+                if (data.isNotEmpty) {
+                  if (context.mounted) {
+                    bool purchOrderFlag =
+                        handleSessionExpiredException(data[0], context);
+                    if (purchOrderFlag) {
+                      return Container();
+                    }
                   }
                 }
                 return SizedBox(
@@ -176,86 +178,92 @@ Future<void> purchOrderShowDialog(
                           ),
                         ),
                         const Divider(),
-                        for (var index = 0; index < data.length; index++) ...[
-                          Column(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  purchOrderMoreInfo(
-                                      context: context, item: data[index]);
-                                },
-                                child: SizedBox(
-                                  // height: 30,
-                                  child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              (data[index][5] ?? '-')
-                                                  .toString()
-                                                  .trim(),
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey),
-                                            )),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                            flex: 4,
-                                            child: Text(
-                                              (data[index][7] ?? '-')
-                                                  .toString()
-                                                  .trim(),
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey),
-                                            )),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              data[index][9].toString(),
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey),
-                                              textAlign: TextAlign.right,
-                                            )),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              (data[index][8] ?? '-')
-                                                  .toString()
-                                                  .trim(),
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey),
-                                              textAlign: TextAlign.right,
-                                            )),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              (data[index][11] ?? '-')
-                                                  .toString()
-                                                  .trim(),
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey),
-                                              textAlign: TextAlign.right,
-                                            )),
-                                        const SizedBox(
-                                            width: 15,
-                                            child: Icon(
-                                                Icons.arrow_right_outlined)),
-                                      ]),
+                        if (data.isNotEmpty) ...[
+                          for (var index = 0; index < data.length; index++) ...[
+                            Column(
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    purchOrderMoreInfo(
+                                        context: context, item: data[index]);
+                                  },
+                                  child: SizedBox(
+                                    // height: 30,
+                                    child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                (data[index][5] ?? '-')
+                                                    .toString()
+                                                    .trim(),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey),
+                                              )),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              flex: 4,
+                                              child: Text(
+                                                (data[index][7] ?? '-')
+                                                    .toString()
+                                                    .trim(),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey),
+                                              )),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              flex: 1,
+                                              child: Text(
+                                                data[index][9].toString(),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey),
+                                                textAlign: TextAlign.right,
+                                              )),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                (data[index][8] ?? '-')
+                                                    .toString()
+                                                    .trim(),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey),
+                                                textAlign: TextAlign.right,
+                                              )),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                (data[index][11] ?? '-')
+                                                    .toString()
+                                                    .trim(),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey),
+                                                textAlign: TextAlign.right,
+                                              )),
+                                          const SizedBox(
+                                              width: 15,
+                                              child: Icon(
+                                                  Icons.arrow_right_outlined)),
+                                        ]),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const Divider(),
+                              ],
+                            ),
+                            const Divider(),
+                          ],
+                        ] else ...[
+                          const Center(
+                            child: Text('Empty'),
+                          )
                         ],
                       ],
                     ),

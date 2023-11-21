@@ -111,48 +111,48 @@ class _MobileHomeState extends State<MobileHome>
       titleNotifier = ValueNotifier('');
     }
     if (kIsWeb) {
-      // webNotificationStream();
+      webNotificationStream();
     } else {
       // when user taps notif
-        FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-          setState(() {
-            futures = [
-              _getPurchReqData(button: true),
-              _getPurchOrderData(button: true),
-              // _getSalesOrderData(button: true),
-              // _getSalesOrderItemsData(button: true),
-            ];
-          });
-          if (message.data['type'] == 'PR') {
-            String requestNumber = message.data['preqNum'];
-            purchReqProvider.setReqNumber(
-                reqNumber: int.parse(requestNumber), notify: true);
-            indexNotifier = ValueNotifier(0);
-          }
-          if (message.data['type'] == 'PO') {
-            String orderNumber = message.data['poNum'];
-            purchOrderProvider.setOrderNumber(
-                orderNumber: int.parse(orderNumber), notify: true);
-            indexNotifier = ValueNotifier(1);
-          }
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        setState(() {
+          futures = [
+            _getPurchReqData(button: true),
+            _getPurchOrderData(button: true),
+            // _getSalesOrderData(button: true),
+            // _getSalesOrderItemsData(button: true),
+          ];
         });
+        if (message.data['type'] == 'PR') {
+          String requestNumber = message.data['preqNum'];
+          purchReqProvider.setReqNumber(
+              reqNumber: int.parse(requestNumber), notify: true);
+          indexNotifier = ValueNotifier(0);
+        }
+        if (message.data['type'] == 'PO') {
+          String orderNumber = message.data['poNum'];
+          purchOrderProvider.setOrderNumber(
+              orderNumber: int.parse(orderNumber), notify: true);
+          indexNotifier = ValueNotifier(1);
+        }
+      });
 
-        //foreground
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-          final type = message.data['type'];
-          player.play('audio/notif_sound2.mp3');
-          showToastMessage(
-              type == 'PR' ? 'New Purchase Request!' : 'New Purchase Order!');
-          refreshIconIndicatorProvider.setShow(show: true);
-          notifProvider.addNotification({
-            'type': type,
-            'timestamp': Timestamp.now().millisecondsSinceEpoch,
-            'seen': false,
-            if (type == 'group') 'group': message.data['group'],
-            if (type == 'PR') 'preqNum': message.data['preqNum'],
-            if (type == 'PO') 'poNum': message.data['poNum'],
-          });
+      //foreground
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        final type = message.data['type'];
+        player.play('audio/notif_sound2.mp3');
+        showToastMessage(
+            type == 'PR' ? 'New Purchase Request!' : 'New Purchase Order!');
+        refreshIconIndicatorProvider.setShow(show: true);
+        notifProvider.addNotification({
+          'type': type,
+          'timestamp': Timestamp.now().millisecondsSinceEpoch,
+          'seen': false,
+          if (type == 'group') 'group': message.data['group'],
+          if (type == 'PR') 'preqNum': message.data['preqNum'],
+          if (type == 'PO') 'poNum': message.data['poNum'],
         });
+      });
     }
   }
 
@@ -164,33 +164,33 @@ class _MobileHomeState extends State<MobileHome>
     super.dispose();
   }
 
-  // void webNotificationStream() {
-  //   bool stream = false;
-  //   final documentRef = FirebaseFirestore.instance
-  //       .collection("notifications")
-  //       .doc(userProvider.user!.username);
-  //   _subscription = documentRef.snapshots().listen(
-  //     (event) {
-  //       if (stream) {
-  //         final data = event.data()!;
-  //         if (data['notifications'] != null) {
-  //           if (data['triggerStream'] == true) {
-  //             webNotification(data: data);
-  //             player.play('audio/notif_sound2.mp3',
-  //                 isNotification: true, volume: 0.5);
-  //           }
-  //           WidgetsBinding.instance.addPostFrameCallback((_) {
-  //             notifProvider.setNotifications(data['notifications']);
-  //             notifProvider.setSeen(!notifProvider.notifications
-  //                 .any((notif) => notif['seen'] == false));
-  //           });
-  //         }
-  //       }
-  //       stream = true;
-  //     },
-  //     onError: (error) => print("Listen failed: $error"),
-  //   );
-  // }
+  void webNotificationStream() {
+    // bool stream = false;
+    // final documentRef = FirebaseFirestore.instance
+    //     .collection("notifications")
+    //     .doc(userProvider.user!.username);
+    // _subscription = documentRef.snapshots().listen(
+    //   (event) {
+    //     if (stream) {
+    //       final data = event.data()!;
+    //       if (data['notifications'] != null) {
+    //         if (data['triggerStream'] == true) {
+    //           webNotification(data: data);
+    //           player.play('audio/notif_sound2.mp3',
+    //               isNotification: true, volume: 0.5);
+    //         }
+    //         WidgetsBinding.instance.addPostFrameCallback((_) {
+    //           notifProvider.setNotifications(data['notifications']);
+    //           notifProvider.setSeen(!notifProvider.notifications
+    //               .any((notif) => notif['seen'] == false));
+    //         });
+    //       }
+    //     }
+    //     stream = true;
+    //   },
+    //   onError: (error) => print("Listen failed: $error"),
+    // );
+  }
 
   // js.JsObject createNotification(String title, String body) {
   //   showToastMessage(title);
@@ -456,8 +456,10 @@ class _MobileHomeState extends State<MobileHome>
                       icon: const Icon(Icons.refresh, color: Colors.white),
                       onPressed: () {
                         showToastMessage('Refreshing data...');
-
                         refreshIconIndicatorProvider.setShow(show: false);
+
+                        indexNotifier.value = 0;
+                        titleNotifier.value = 'Purchase Request';
                         setState(() {
                           refresh = true;
                           //GET new data
@@ -469,6 +471,10 @@ class _MobileHomeState extends State<MobileHome>
                             // _getSalesOrderData(button: true),
                             // _getSalesOrderItemsData(button: true),
                           ];
+                          salesOrderProvider.clearOrderNumber();
+                          salesOrderProvider.clearList();
+                          salesOrderItemsProvider.clearItems(notify: false);
+                          salesOrderItemsProvider.resetDidLoadDataAlready();
                         });
                       },
                     ),
@@ -515,31 +521,33 @@ class _MobileHomeState extends State<MobileHome>
             flexibleSpace: Consumer2<PurchReqProvider, PurchOrderProvider>(
                 builder:
                     (context, purchReqProvider, purchOrderProvider, child) {
-              return Row(
-                children: [
-                  Stack(
-                    children: [
-                      const SizedBox(
-                        width: 55,
-                        height: kToolbarHeight,
-                      ),
-                      Visibility(
-                        visible: purchReqProvider.purchReqPending != 0 ||
-                            purchOrderProvider.purchOrderPending != 0,
-                        child: Positioned(
-                          right: 5,
-                          top: 10,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                                shape: BoxShape.circle, color: Colors.red),
+              return SafeArea(
+                child: Row(
+                  children: [
+                    Stack(
+                      children: [
+                        const SizedBox(
+                          width: 55,
+                          height: kToolbarHeight,
+                        ),
+                        Visibility(
+                          visible: purchReqProvider.purchReqPending != 0 ||
+                              purchOrderProvider.purchOrderPending != 0,
+                          child: Positioned(
+                            right: 5,
+                            top: 10,
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                  shape: BoxShape.circle, color: Colors.red),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               );
             })),
       ),

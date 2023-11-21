@@ -268,9 +268,11 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
   }
 
   void updateSelectedIndex(int newIndex) {
-    indexNotifier.value = newIndex;
-    selectedIndex = newIndex;
-    indexNotifier = ValueNotifier(newIndex);
+    setState(() {
+      indexNotifier.value = newIndex;
+      selectedIndex = newIndex;
+      indexNotifier = ValueNotifier(newIndex);
+    });
   }
 
   // void desktopNotificationStream() {
@@ -514,12 +516,10 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                     tooltip: "Refresh",
                     icon: const Icon(Icons.refresh, color: Colors.white),
                     onPressed: () {
-                      if (mounted) {
-                        clearData(context);
-                      }
                       showToastMessage('Refreshing data...');
 
                       refreshIconIndicatorProvider.setShow(show: false);
+                      // updateSelectedIndex(0);
                       setState(() {
                         refresh = true;
                         //GET new data
@@ -531,6 +531,10 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                           // _getSalesOrderData(button: true),
                           // _getSalesOrderItemsData(button: true),
                         ];
+                        salesOrderProvider.clearOrderNumber();
+                        salesOrderProvider.clearList();
+                        salesOrderItemsProvider.clearItems(notify: false);
+                        salesOrderItemsProvider.resetDidLoadDataAlready();
                       });
                     },
                   ),

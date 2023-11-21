@@ -464,8 +464,7 @@ class WebPurchOrderLineScreen extends StatelessWidget {
                         }, childCount: data.length))
                       ]);
                     } else {
-                      return const Center(
-                          child: Text('An Error Has Occured or line is empty'));
+                      return const Center(child: Text('Empty'));
                     }
                   }
                 }),

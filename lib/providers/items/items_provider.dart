@@ -71,4 +71,11 @@ class ItemsProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void resetDidLoadDataAlready({notify = true}) {
+    _didLoadDataAlready = false;
+    if (notify) {
+      notifyListeners();
+    }
+  }
 }

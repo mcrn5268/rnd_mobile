@@ -187,23 +187,27 @@ class _MobileSalesCreateOrderScreenState
   }
 
   void addItem() {
-    _itemsErrorText.add(null);
-    _itemQtyErrorText.add(null);
-    _itemBaseSellingPriceErrorText.add(null);
-    TextEditingController itemLineNumberController = TextEditingController();
-    _itemsLineNumberControllerList.add(itemLineNumberController);
-    TextEditingController itemController = TextEditingController();
-    _itemsControllerList.add(itemController);
-    TextEditingController itemUnitController = TextEditingController();
-    _itemsUnitControllerList.add(itemUnitController);
-    TextEditingController itemQuantityController = TextEditingController();
-    _itemsQuantityControllerList.add(itemQuantityController);
-    TextEditingController itemPriceController = TextEditingController();
-    _itemsPriceControllerList.add(itemPriceController);
-    int itemIndex = _itemIsActive.length - 1;
-    _itemsLineNumberControllerList[itemIndex].text =
-        _itemsLineNumberControllerList.length.toString();
-    _selectedItem.insert(itemIndex, [null]);
+    try {
+      _itemsErrorText.add(null);
+      _itemQtyErrorText.add(null);
+      _itemBaseSellingPriceErrorText.add(null);
+      TextEditingController itemLineNumberController = TextEditingController();
+      _itemsLineNumberControllerList.add(itemLineNumberController);
+      TextEditingController itemController = TextEditingController();
+      _itemsControllerList.add(itemController);
+      TextEditingController itemUnitController = TextEditingController();
+      _itemsUnitControllerList.add(itemUnitController);
+      TextEditingController itemQuantityController = TextEditingController();
+      _itemsQuantityControllerList.add(itemQuantityController);
+      TextEditingController itemPriceController = TextEditingController();
+      _itemsPriceControllerList.add(itemPriceController);
+      int itemIndex = _itemIsActive.isEmpty ? 0 : _itemIsActive.length - 1;
+      _itemsLineNumberControllerList[itemIndex].text =
+          _itemsLineNumberControllerList.length.toString();
+      _selectedItem.insert(itemIndex, [null]);
+    } catch (e) {
+      print('addItem() error: $e');
+    }
   }
 
   void addDebtorsToList(List<Debtor> newDebtorList) {
@@ -506,30 +510,36 @@ class _MobileSalesCreateOrderScreenState
           displayStringForOption: (Debtor option) => option.debtorName,
           optionsBuilder: (TextEditingValue textEditingValue) async {
             bool salesOrderFlag = false;
-            //first time loading data
-            if (_debtors.isEmpty) {
-              final result = await SalesOrderService.getDebtorView(
-                  sessionId: userProvider.user!.sessionId);
-              List<dynamic> resultDebtors = result['debtors'];
-              _debtors = resultDebtors
+
+            // Helper function to convert result to Debtor list
+            List<Debtor> convertToDebtorList(List<dynamic> resultDebtors) {
+              return resultDebtors
                   .map((debtorList) => Debtor(
                         debtorId: debtorList[0].toDouble(),
                         debtorCode: debtorList[1].toString(),
                         debtorName: debtorList[2].toString(),
                       ))
                   .toList();
+            }
 
-              _debtorsHasMore = result['hasMore'];
+            //first time loading data
+            if (_debtors.isEmpty) {
+              final result = await SalesOrderService.getDebtorView(
+                  sessionId: userProvider.user!.sessionId);
               //for checking if session is still valid
               if (context.mounted) {
-                salesOrderFlag =
-                    handleSessionExpiredException(_debtors[0], context);
+                salesOrderFlag = handleSessionExpiredException(result, context);
+              }
+              if (!salesOrderFlag) {
+                _debtors = convertToDebtorList(result['debtors']);
+                _debtorsHasMore = result['hasMore'];
               }
             }
+
             //if session is still valid
             if (!salesOrderFlag) {
               if (textEditingValue.text.length < 2) {
-                //use main list for search if  input character <2
+                //use main list for search if input character <2
                 return _debtors
                     .where((debtor) =>
                         debtor.contains(textEditingValue.text.toLowerCase()))
@@ -549,14 +559,8 @@ class _MobileSalesCreateOrderScreenState
                   search = await SalesOrderService.getDebtorView(
                       sessionId: userProvider.user!.sessionId,
                       search: textEditingValue.text);
-                  List<dynamic> resultDebtors = search['debtors'];
-                  List<Debtor> searchResult = resultDebtors
-                      .map((debtorList) => Debtor(
-                            debtorId: debtorList[0].toDouble(),
-                            debtorCode: debtorList[1].toString(),
-                            debtorName: debtorList[2].toString(),
-                          ))
-                      .toList();
+                  List<Debtor> searchResult =
+                      convertToDebtorList(search['debtors']);
 
                   searchResult = searchResult
                       .where((debtor) =>
@@ -782,30 +786,37 @@ class _MobileSalesCreateOrderScreenState
           displayStringForOption: (Warehouse option) => option.whsDesc,
           optionsBuilder: (TextEditingValue textEditingValue) async {
             bool salesOrderFlag = false;
-            //first time loading data
-            if (_warehouse.isEmpty) {
-              final result = await SalesOrderService.getWarehouseView(
-                  sessionId: userProvider.user!.sessionId);
-              List<dynamic> resultWarehouse = result['warehouse'];
-              _warehouse = resultWarehouse
+
+            // Helper function to convert result to Warehouse list
+            List<Warehouse> convertToWarehouseList(
+                List<dynamic> resultWarehouse) {
+              return resultWarehouse
                   .map((warehouseList) => Warehouse(
                         whsId: warehouseList[0].toDouble(),
                         whsCode: warehouseList[1].toString(),
                         whsDesc: warehouseList[2].toString(),
                       ))
                   .toList();
+            }
 
-              _warehouseHasMore = result['hasMore'];
+            //first time loading data
+            if (_warehouse.isEmpty) {
+              final result = await SalesOrderService.getWarehouseView(
+                  sessionId: userProvider.user!.sessionId);
               //for checking if session is still valid
               if (context.mounted) {
-                salesOrderFlag =
-                    handleSessionExpiredException(_warehouse[0], context);
+                salesOrderFlag = handleSessionExpiredException(result, context);
+              }
+              if (!salesOrderFlag) {
+                _warehouse = convertToWarehouseList(result['warehouse']);
+                _warehouseHasMore = result['hasMore'];
               }
             }
+
             //if session is still valid
             if (!salesOrderFlag) {
               if (textEditingValue.text.length < 2) {
-                //use main list for search if  input character <2
+                //use main list for search if input character <2
                 return _warehouse
                     .where((warehouse) =>
                         warehouse.contains(textEditingValue.text.toLowerCase()))
@@ -825,14 +836,8 @@ class _MobileSalesCreateOrderScreenState
                   search = await SalesOrderService.getWarehouseView(
                       sessionId: userProvider.user!.sessionId,
                       search: textEditingValue.text);
-                  List<dynamic> resultWarehouse = search['warehouse'];
-                  List<Warehouse> searchResult = resultWarehouse
-                      .map((warehouseList) => Warehouse(
-                            whsId: warehouseList[0].toDouble(),
-                            whsCode: warehouseList[1].toString(),
-                            whsDesc: warehouseList[2].toString(),
-                          ))
-                      .toList();
+                  List<Warehouse> searchResult =
+                      convertToWarehouseList(search['warehouse']);
 
                   searchResult = searchResult
                       .where((warehouse) => warehouse
@@ -1061,30 +1066,36 @@ class _MobileSalesCreateOrderScreenState
           displayStringForOption: (TermsOfPayment option) => option.topDesc,
           optionsBuilder: (TextEditingValue textEditingValue) async {
             bool salesOrderFlag = false;
-            //first time loading data
-            if (_tops.isEmpty) {
-              final result = await SalesOrderService.getTOPView(
-                  sessionId: userProvider.user!.sessionId);
-              List<dynamic> resultTOP = result['tops'];
-              _tops = resultTOP
+
+            // Helper function to convert result to TermsOfPayment list
+            List<TermsOfPayment> convertToTOPList(List<dynamic> resultTOP) {
+              return resultTOP
                   .map((topList) => TermsOfPayment(
                         topId: topList[0].toDouble(),
                         topCode: topList[1].toString(),
                         topDesc: topList[2].toString(),
                       ))
                   .toList();
+            }
 
-              _topsHasMore = result['hasMore'];
+            //first time loading data
+            if (_tops.isEmpty) {
+              final result = await SalesOrderService.getTOPView(
+                  sessionId: userProvider.user!.sessionId);
               //for checking if session is still valid
               if (context.mounted) {
-                salesOrderFlag =
-                    handleSessionExpiredException(_tops[0], context);
+                salesOrderFlag = handleSessionExpiredException(result, context);
+              }
+              if (!salesOrderFlag) {
+                _tops = convertToTOPList(result['tops']);
+                _topsHasMore = result['hasMore'];
               }
             }
+
             //if session is still valid
             if (!salesOrderFlag) {
               if (textEditingValue.text.length < 2) {
-                //use main list for search if  input character <2
+                //use main list for search if input character <2
                 return _tops
                     .where((top) =>
                         top.contains(textEditingValue.text.toLowerCase()))
@@ -1104,14 +1115,8 @@ class _MobileSalesCreateOrderScreenState
                   search = await SalesOrderService.getTOPView(
                       sessionId: userProvider.user!.sessionId,
                       search: textEditingValue.text);
-                  List<dynamic> resultTOP = search['tops'];
-                  List<TermsOfPayment> searchResult = resultTOP
-                      .map((topsList) => TermsOfPayment(
-                            topId: topsList[0].toDouble(),
-                            topCode: topsList[1].toString(),
-                            topDesc: topsList[2].toString(),
-                          ))
-                      .toList();
+                  List<TermsOfPayment> searchResult =
+                      convertToTOPList(search['tops']);
 
                   searchResult = searchResult
                       .where((top) =>
@@ -1331,30 +1336,37 @@ class _MobileSalesCreateOrderScreenState
           displayStringForOption: (SalesRep option) => option.salesRepName,
           optionsBuilder: (TextEditingValue textEditingValue) async {
             bool salesOrderFlag = false;
-            //first time loading data
-            if (_salesReps.isEmpty) {
-              final result = await SalesOrderService.getSalesRepView(
-                  sessionId: userProvider.user!.sessionId);
-              List<dynamic> resultSalesRep = result['salesReps'];
-              _salesReps = resultSalesRep
+
+            // Helper function to convert result to SalesRep list
+            List<SalesRep> convertToSalesRepList(List<dynamic> resultSalesRep) {
+              return resultSalesRep
                   .map((salesRepsList) => SalesRep(
                         salesRepId: salesRepsList[0].toDouble(),
                         salesRepCode: salesRepsList[1].toString(),
                         salesRepName: salesRepsList[2].toString(),
                       ))
                   .toList();
+            }
 
-              _salesRepsHasMore = result['hasMore'];
+            //first time loading data
+            if (_salesReps.isEmpty) {
+              final result = await SalesOrderService.getSalesRepView(
+                  sessionId: userProvider.user!.sessionId);
+
               //for checking if session is still valid
               if (context.mounted) {
-                salesOrderFlag =
-                    handleSessionExpiredException(_salesReps[0], context);
+                salesOrderFlag = handleSessionExpiredException(result, context);
+              }
+              if (!salesOrderFlag) {
+                _salesReps = convertToSalesRepList(result['salesReps']);
+                _salesRepsHasMore = result['hasMore'];
               }
             }
+
             //if session is still valid
             if (!salesOrderFlag) {
               if (textEditingValue.text.length < 2) {
-                //use main list for search if  input character <2
+                //use main list for search if input character <2
                 return _salesReps
                     .where((salesRep) =>
                         salesRep.contains(textEditingValue.text.toLowerCase()))
@@ -1374,15 +1386,8 @@ class _MobileSalesCreateOrderScreenState
                   search = await SalesOrderService.getSalesRepView(
                       sessionId: userProvider.user!.sessionId,
                       search: textEditingValue.text);
-                  List<dynamic> resultSalesRep = search['salesReps'];
-                  print('resultSalesRep: $resultSalesRep');
-                  List<SalesRep> searchResult = resultSalesRep
-                      .map((salesRepsList) => SalesRep(
-                            salesRepId: salesRepsList[0].toDouble(),
-                            salesRepCode: salesRepsList[1].toString(),
-                            salesRepName: salesRepsList[2].toString(),
-                          ))
-                      .toList();
+                  List<SalesRep> searchResult =
+                      convertToSalesRepList(search['salesReps']);
 
                   searchResult = searchResult
                       .where((salesRep) => salesRep
@@ -1629,62 +1634,59 @@ class _MobileSalesCreateOrderScreenState
                     Row(
                       children: [
                         Expanded(
-                          child: TextField(
-                            controller: _itemsLineNumberControllerList[index],
-                            enabled: false,
-                            decoration: InputDecoration(
-                              disabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                    color: MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
-                                        ? Colors.black
-                                        : Colors.transparent),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              labelText: 'Line Number',
-                              labelStyle: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              filled: true,
-                              fillColor: brightness == Brightness.dark
-                                  ? Colors.grey[900]
-                                  : Colors.white,
-                              suffixIcon: Visibility(
-                                visible: _itemsLineNumberControllerList[index]
-                                    .text
-                                    .isNotEmpty,
-                                child: IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.close, size: 25),
-                                  onPressed: () {
-                                    setState(() {
-                                      _itemsLineNumberControllerList[index]
-                                          .clear();
-                                    });
-                                  },
-                                ),
+                            child: TextField(
+                          controller: _itemsLineNumberControllerList[index],
+                          enabled: false,
+                          decoration: InputDecoration(
+                            disabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: MediaQuery.of(context)
+                                              .platformBrightness ==
+                                          Brightness.dark
+                                      ? Colors.black
+                                      : Colors.transparent),
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            labelText: 'Line Number',
+                            labelStyle: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            filled: true,
+                            fillColor: brightness == Brightness.dark
+                                ? Colors.grey[900]
+                                : Colors.white,
+                            suffixIcon: Visibility(
+                              visible: _itemsLineNumberControllerList[index]
+                                  .text
+                                  .isNotEmpty,
+                              child: IconButton(
+                                focusNode: FocusNode(skipTraversal: true),
+                                icon: const Icon(Icons.close, size: 25),
+                                onPressed: () {
+                                  setState(() {
+                                    _itemsLineNumberControllerList[index]
+                                        .clear();
+                                  });
+                                },
                               ),
                             ),
-                            onChanged: (text) {
-                              setState(() {});
-                            },
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: false),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
                           ),
-                        ),
+                          onChanged: (text) {
+                            setState(() {});
+                          },
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: false),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                        )),
                         const SizedBox(
                           width: 15,
                         ),
@@ -2286,6 +2288,7 @@ class _MobileSalesCreateOrderScreenState
             _isCreating = true;
           });
           bool proceed = true;
+
           String? reference = _referenceController.text.isNotEmpty
               ? _referenceController.text
               : null;
@@ -2308,21 +2311,10 @@ class _MobileSalesCreateOrderScreenState
                 ? 'Delivery Date is not valid'
                 : 'Delivery Date is empty';
           }
-          // final debtorID = double.parse(_selectedDebtor[0].toString());
-          // final whsID = double.parse(_selectedWarehouse[0].toString());
-          // final topID = double.parse(_selectedTOP[0].toString());
-          // final salesrepID =
-          //     double.parse(_selectedSalesRep[0].toString());
-
-          // final debtorID = _selectedDebtor[0].toDouble();
-          // final whsID = _selectedWarehouse[0].toDouble();
-          // final topID = _selectedTOP[0].toDouble();
-          // final salesrepID = _selectedSalesRep[0].toDouble();
 
           double? debtorID =
               _selectedDebtor != null ? _selectedDebtor!.debtorId : null;
           if (debtorID == null) {
-            // showToast('Debtor is empty');
             proceed = false;
             _debtorErrorText = 'Debtor is empty';
           }
@@ -2330,14 +2322,12 @@ class _MobileSalesCreateOrderScreenState
           double? whsID =
               _selectedWarehouse != null ? _selectedWarehouse!.whsId : null;
           if (whsID == null) {
-            // showToast('Warehouse is empty');
             proceed = false;
             _warehouseErrorText = 'Warehouse is empty';
           }
 
           double? topID = _selectedTOP != null ? _selectedTOP!.topId : null;
           if (topID == null) {
-            // showToast('Terms of Payment is empty');
             proceed = false;
             _topErrorText = 'Terms of Payment is empty';
           }
@@ -2345,7 +2335,6 @@ class _MobileSalesCreateOrderScreenState
           double? salesrepID =
               _selectedSalesRep != null ? _selectedSalesRep!.salesRepId : null;
           if (salesrepID == null) {
-            // showToast('Sales Representative is empty');
             proceed = false;
             _salesRepErrorText = 'Sales Representative is empty';
           }
@@ -2355,11 +2344,11 @@ class _MobileSalesCreateOrderScreenState
           String? particulars = _particularsController.text.isNotEmpty
               ? _particularsController.text
               : null;
+
           // CHECK THE removedIndex LIST
           List<dynamic> lines = [];
-
           for (int index = 0; index < _itemIsActive.length; index++) {
-            if (!removedIndex.contains(index + 1)) {
+            if (!removedIndex.contains(index)) {
               int? lnNum =
                   int.tryParse(_itemsLineNumberControllerList[index].text);
               int? itemID = _selectedItem.length > index
@@ -2433,34 +2422,41 @@ class _MobileSalesCreateOrderScreenState
                     _topClear = true;
                     _salesRepClear = true;
                     _particularsController.clear();
-                    _conversionFactorController.clear();
+                    //temporary
+                    // _conversionFactorController.clear();
                     _selectedDebtor = null;
                     _selectedWarehouse = null;
                     _selectedTOP = null;
                     _selectedSalesRep = null;
+                    _itemIsActive.clear();
                     for (var controller in _itemsControllerList) {
                       controller.clear();
                     }
+                    _itemsControllerList.clear();
+
                     for (var controller in _itemsLineNumberControllerList) {
                       controller.clear();
                     }
                     _itemsLineNumberControllerList.clear();
+
                     for (var controller in _itemsUnitControllerList) {
                       controller.clear();
                     }
                     _itemsUnitControllerList.clear();
+
                     for (var controller in _itemsQuantityControllerList) {
                       controller.clear();
                     }
                     _itemsQuantityControllerList.clear();
+
                     for (var controller in _itemsPriceControllerList) {
                       controller.clear();
                     }
                     _itemsPriceControllerList.clear();
+
                     // _itemsRowList.clear();
                     // _addNewWidget();
                     addItem();
-                    _itemIsActive.clear();
                     _itemIsActive.add(true);
                   });
                 } catch (e) {
@@ -2489,6 +2485,8 @@ class _MobileSalesCreateOrderScreenState
               // showToastMessage('An Error Has Occured!: $error',
               //     errorToast: true);
             });
+          } else {
+            showToastMessage('An input field is empty');
           }
           setState(() {
             _isCreating = false;
@@ -2682,19 +2680,22 @@ class _MobileSalesCreateOrderScreenState
                   ),
                   const SizedBox(height: 20),
                   //Items Row
-                  Column(
-                    children: List.generate(_itemIsActive.length, (index) {
-                      if (_itemIsActive[index]) {
-                        return itemsRowWidget(index);
-                      } else {
-                        return Container();
-                      }
-                    }),
-                  ),
+                  if (_itemIsActive.isNotEmpty) ...[
+                    Column(
+                      children: List.generate(_itemIsActive.length, (index) {
+                        if (_itemIsActive[index]) {
+                          return itemsRowWidget(index);
+                        } else {
+                          return Container();
+                        }
+                      }),
+                    ),
+                  ],
+
                   const SizedBox(height: 20),
                   const Divider(),
                   Row(children: [const Spacer(), addItemButtonWidget]),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 50),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [createButtonWidget]),

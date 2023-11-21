@@ -482,7 +482,7 @@ class WebSalesOrderLineScreen extends StatelessWidget {
                       ]);
                     } else {
                       return const Center(
-                          child: Text('An Error Has Occured or line is empty'));
+                          child: Text('Empty'));
                     }
                   }
                 }),
