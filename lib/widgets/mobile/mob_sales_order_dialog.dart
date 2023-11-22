@@ -6,6 +6,8 @@ import 'package:rnd_mobile/api/sales_order_api.dart';
 import 'package:rnd_mobile/models/sales_order_model.dart';
 import 'package:rnd_mobile/providers/sales_order/sales_order_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
+import 'package:rnd_mobile/utilities/convert_lines_array_to_map.dart';
+import 'package:rnd_mobile/utilities/generate_pdf.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/widgets/item_details_row.dart';
 
@@ -13,6 +15,7 @@ Future<void> salesOrderShowDialog(
     {required BuildContext context, required SalesOrder order}) async {
   var soDate = DateFormat.yMMMd().format(order.soDate);
   var deliveryDate = DateFormat.yMMMd().format(order.deliveryDate);
+  List<Map<String, dynamic>> dataMap = [];
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -135,6 +138,29 @@ Future<void> salesOrderShowDialog(
           ],
         ),
         const SizedBox(height: 10),
+        Container(
+          color:
+              PlatformDispatcher.instance.platformBrightness == Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.grey[300],
+          child: const Padding(
+            padding: EdgeInsets.only(top: 10, bottom: 10),
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              SizedBox(width: 10),
+              Expanded(flex: 2, child: Text('Item')),
+              SizedBox(width: 10),
+              Expanded(flex: 4, child: Text('Description')),
+              SizedBox(width: 10),
+              Expanded(flex: 1, child: Text('Qty')),
+              SizedBox(width: 10),
+              Expanded(flex: 2, child: Text('Unit')),
+              SizedBox(width: 10),
+              Expanded(flex: 2, child: Text('Price')),
+              SizedBox(width: 15),
+            ]),
+          ),
+        ),
         Center(
           child: FutureBuilder(
             future: SalesOrderService.getSalesOrderLneView(
@@ -156,131 +182,147 @@ Future<void> salesOrderShowDialog(
                     }
                   }
                 }
-                return SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.50,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Container(
-                          color:
-                              PlatformDispatcher.instance.platformBrightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[850]
-                                  : Colors.grey[300],
-                          child: const Padding(
-                            padding: EdgeInsets.only(top: 10, bottom: 10),
-                            child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(width: 10),
-                                  Expanded(flex: 2, child: Text('Item')),
-                                  SizedBox(width: 10),
-                                  Expanded(flex: 4, child: Text('Description')),
-                                  SizedBox(width: 10),
-                                  Expanded(flex: 1, child: Text('Qty')),
-                                  SizedBox(width: 10),
-                                  Expanded(flex: 2, child: Text('Unit')),
-                                  SizedBox(width: 10),
-                                  Expanded(flex: 2, child: Text('Price')),
-                                  SizedBox(width: 15),
-                                ]),
-                          ),
-                        ),
-                        const Divider(),
-                        if (data.isNotEmpty) ...[
-                          for (var index = 0; index < data.length; index++) ...[
-                            Column(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    purchOrderMoreInfo(
-                                        context: context, item: data[index]);
-                                  },
-                                  child: SizedBox(
-                                    // height: 30,
-                                    child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 2,
-                                              child: Text(
-                                                (data[index][5] ?? '-')
-                                                    .toString()
-                                                    .trim(),
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey),
-                                              )),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 4,
-                                              child: Text(
-                                                (data[index][7] ?? '-')
-                                                    .toString()
-                                                    .trim(),
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey),
-                                              )),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 1,
-                                              child: Text(
-                                                data[index][9].toString(),
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey),
-                                                textAlign: TextAlign.right,
-                                              )),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 2,
-                                              child: Text(
-                                                (data[index][8] ?? '-')
-                                                    .toString()
-                                                    .trim(),
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey),
-                                                textAlign: TextAlign.right,
-                                              )),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 2,
-                                              child: Text(
-                                                (data[index][11] ?? '-')
-                                                    .toString()
-                                                    .trim(),
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey),
-                                                textAlign: TextAlign.right,
-                                              )),
-                                          const SizedBox(
-                                              width: 15,
-                                              child: Icon(
-                                                  Icons.arrow_right_outlined)),
-                                        ]),
-                                  ),
+                dataMap = [...ConvertLinesArrayToMap().salesOrder(data)];
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Divider(),
+                      if (dataMap.isNotEmpty) ...[
+                        for (var index = 0;
+                            index < dataMap.length;
+                            index++) ...[
+                          Column(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  purchOrderMoreInfo(
+                                      context: context, item: data[index]);
+                                },
+                                child: SizedBox(
+                                  // height: 30,
+                                  child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              (dataMap[index]['item_code'] ??
+                                                      '-')
+                                                  .toString()
+                                                  .trim(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                            )),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 4,
+                                            child: Text(
+                                              (dataMap[index]['item_desc'] ??
+                                                      '-')
+                                                  .toString()
+                                                  .trim(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                            )),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              dataMap[index]['qty'].toString(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                              // textAlign: TextAlign.right,
+                                            )),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              (dataMap[index]['so_unit'] ?? '-')
+                                                  .toString()
+                                                  .trim(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                              // textAlign: TextAlign.right,
+                                            )),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              (dataMap[index]
+                                                          ['selling_price'] ??
+                                                      '-')
+                                                  .toString()
+                                                  .trim(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                              // textAlign: TextAlign.right,
+                                            )),
+                                        const SizedBox(
+                                            width: 15,
+                                            child: Icon(
+                                                Icons.arrow_right_outlined)),
+                                      ]),
                                 ),
-                              ],
-                            ),
-                            const Divider(),
-                          ],
-                        ] else ...[
-                          const Center(
-                            child: Text('Empty'),
-                          )
+                              ),
+                            ],
+                          ),
+                          const Divider(),
                         ],
+                      ] else ...[
+                        const Center(
+                          child: Text('Empty'),
+                        )
                       ],
-                    ),
+                    ],
                   ),
                 );
               }
             },
           ),
+        ),
+        Column(
+          children: [
+            const Divider(),
+            // Generate PDF
+            ElevatedButton(
+                onPressed: () async {
+                  await generatePdf(
+                      context: context,
+                      title: 'SALES ORDER',
+                      leftHeader: {
+                        'Customer': order.debtorName,
+                        'Terms': order.topDescription,
+                      },
+                      rightHeader: {
+                        'Date': soDate,
+                        'Delivery Date': deliveryDate
+                      },
+                      lines: [
+                        {'name': 'Line', 'code': 'ln_num'},
+                        {'name': 'Item Description', 'code': 'item_desc'},
+                        {'name': 'Order Qty', 'code': 'qty'},
+                        {'name': 'Unit', 'code': 'so_unit'},
+                        {'name': 'Price', 'code': 'selling_price'},
+                        {'name': 'Subtotal', 'code': 'subtotal'}
+                      ],
+                      dataMap: dataMap,
+                      footer: [
+                        'Prepared By',
+                        'Noted By',
+                        'Approved By',
+                        'Received By'
+                      ]);
+                },
+                child: const Text('Generate PDF')),
+          ],
         ),
       ]);
     },

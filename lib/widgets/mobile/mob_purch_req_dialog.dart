@@ -6,6 +6,8 @@ import 'package:rnd_mobile/api/purchase_req_api.dart';
 import 'package:rnd_mobile/models/purchase_req_model.dart';
 import 'package:rnd_mobile/providers/purchase_request/purchase_req_provider.dart';
 import 'package:rnd_mobile/providers/user_provider.dart';
+import 'package:rnd_mobile/utilities/convert_lines_array_to_map.dart';
+import 'package:rnd_mobile/utilities/generate_pdf.dart';
 import 'package:rnd_mobile/utilities/session_handler.dart';
 import 'package:rnd_mobile/widgets/item_details_row.dart';
 
@@ -14,6 +16,7 @@ Future<void> purchReqShowDialog(
   print(request);
   var requestDate = DateFormat.yMMMd().format(request.requestDate);
   var neededDate = DateFormat.yMMMd().format(request.neededDate);
+  List<Map<String, dynamic>> dataMap = [];
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -112,100 +115,107 @@ Future<void> purchReqShowDialog(
                     }
                   }
                 }
+                dataMap = [...ConvertLinesArrayToMap().purchReq(data)];
 
-                return SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.50,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        const Divider(),
-                        if (data.isNotEmpty) ...[
-                          for (var index = 0; index < 15; index++) ...[
-                            Column(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    purchReqMoreInfo(
-                                        context: context, item: data[index]);
-                                  },
-                                  child: SizedBox(
-                                    // height: 30,
-                                    child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 2,
-                                              child: Text(
-                                                  (data[index][4] ?? '-')
-                                                      .toString()
-                                                      .trim(),
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey))),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 4,
-                                              child: Text(
-                                                  (data[index][6] ?? '-')
-                                                      .toString()
-                                                      .trim(),
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey))),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 1,
-                                              child: Text(
-                                                data[index][7].toString(),
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey),
-                                                textAlign: TextAlign.right,
-                                              )),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 1,
-                                              child: Text(
-                                                (data[index][8] ?? '-')
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Divider(),
+                      if (dataMap.isNotEmpty) ...[
+                        for (var index = 0;
+                            index < dataMap.length;
+                            index++) ...[
+                          Column(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  purchReqMoreInfo(
+                                      context: context, item: data[index]);
+                                },
+                                child: SizedBox(
+                                  // height: 30,
+                                  child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                                (dataMap[index]['item_code'] ??
+                                                        '-')
                                                     .toString()
                                                     .trim(),
                                                 style: const TextStyle(
                                                     fontSize: 12,
-                                                    color: Colors.grey),
-                                                textAlign: TextAlign.right,
-                                              )),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                              flex: 1,
-                                              child: Text(
-                                                (data[index][13] ?? '-')
+                                                    color: Colors.grey))),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 4,
+                                            child: Text(
+                                                (dataMap[index]['item_desc2'] ??
+                                                        '-')
                                                     .toString()
                                                     .trim(),
                                                 style: const TextStyle(
                                                     fontSize: 12,
-                                                    color: Colors.grey),
-                                                textAlign: TextAlign.right,
-                                              )),
-                                          const SizedBox(
-                                              width: 15,
-                                              child: Icon(
-                                                  Icons.arrow_right_outlined)),
-                                        ]),
-                                  ),
+                                                    color: Colors.grey))),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              dataMap[index]['qty_requested']
+                                                  .toString(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                              // textAlign: TextAlign.right,
+                                            )),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              (dataMap[index]['trnx_unit'] ??
+                                                      '-')
+                                                  .toString()
+                                                  .trim(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                              // textAlign: TextAlign.right,
+                                            )),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              (dataMap[index]
+                                                          ['supplier_price'] ??
+                                                      '-')
+                                                  .toString()
+                                                  .trim(),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                              // textAlign: TextAlign.right,
+                                            )),
+                                        const SizedBox(
+                                            width: 15,
+                                            child: Icon(
+                                                Icons.arrow_right_outlined)),
+                                      ]),
                                 ),
-                              ],
-                            ),
-                            const Divider(),
-                          ],
-                        ] else ...[
-                          const Center(
-                            child: Text('Empty'),
-                          )
+                              ),
+                            ],
+                          ),
+                          const Divider(),
                         ],
+                      ] else ...[
+                        const Center(
+                          child: Text('Empty'),
+                        )
                       ],
-                    ),
+                    ],
                   ),
                 );
               }
@@ -216,9 +226,32 @@ Future<void> purchReqShowDialog(
           children: [
             const Divider(),
             // Generate PDF
-            ElevatedButton(onPressed: () {
-              
-            }, child: Text('Generate PDF')),
+            ElevatedButton(
+                onPressed: () async {
+                  await generatePdf(
+                      context: context,
+                      title: 'PURCHASE REQUEST',
+                      leftHeader: {
+                        'P.R #': request.preqNum,
+                        'Requested By': request.requestedBy,
+                        'Reference': request.reference,
+                        'Reason': request.reason
+                      },
+                      rightHeader: {
+                        'Request Date': requestDate,
+                        'Needed Date': neededDate
+                      },
+                      lines: [
+                        {'name': 'Qty', 'code': 'qty_requested'},
+                        {'name': 'Unit', 'code': 'trnx_unit'},
+                        {'name': 'Item Code', 'code': 'item_code'},
+                        {'name': 'Item Description', 'code': 'item_desc2'},
+                        {'name': 'Particulars', 'code': 'particulars'}
+                      ],
+                      dataMap: dataMap,
+                      footer: ['Prepared By', 'Requested By', 'Approved By']);
+                },
+                child: const Text('Generate PDF')),
           ],
         ),
       ]);
