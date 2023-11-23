@@ -15,9 +15,11 @@ void showToastMessage(String message, {bool errorToast = false}) {
         children: [
           // Icon(Icons.check, color: Colors.green),
           // SizedBox(width: 12.0),
-          Text(
-            message,
-            style: const TextStyle(color: Colors.white),
+          Flexible(
+            child: Text(
+              message,
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
           if (errorToast) ...[
             const SizedBox(width: 12.0),

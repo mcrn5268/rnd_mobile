@@ -55,184 +55,187 @@ Future<void> generatePdf({
     }
 
     pdf.addPage(
-      pw.Page(
-        build: (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            // Title
-            pw.Padding(
-              padding: const pw.EdgeInsets.only(bottom: 20.0),
-              child: pw.Center(
-                child: pw.Text(
-                  title,
-                  style: pw.TextStyle(
-                    fontWeight: pw.FontWeight.bold,
-                    fontSize: 20.0,
-                  ),
-                ),
-              ),
-            ),
+      pw.MultiPage(
+          build: (context) => [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 20.0),
+                      child: pw.Center(
+                        child: pw.Text(
+                          title,
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 20.0,
+                          ),
+                        ),
+                      ),
+                    ),
 
-            // Headers
-            pw.Row(
-              children: [
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: leftHeader.entries.map((entry) {
-                      return pw.Row(
+                    // Headers
+                    pw.Row(
+                      children: [
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: leftHeader.entries.map((entry) {
+                              return pw.Row(
+                                children: [
+                                  pw.SizedBox(
+                                    width: 100,
+                                    child: pw.Text('${entry.key}:'),
+                                  ),
+                                  pw.Text(
+                                    ' ${entry.value}',
+                                    style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        pw.Expanded(
+                          child: pw.Padding(
+                            padding: const pw.EdgeInsets.only(left: 70.0),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: rightHeader.entries.map((entry) {
+                                return pw.Row(
+                                  children: [
+                                    pw.SizedBox(
+                                      width: 100,
+                                      child: pw.Text('${entry.key}:'),
+                                    ),
+                                    pw.Text(
+                                      ' ${entry.value}',
+                                      style: pw.TextStyle(
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 20),
+                    pw.Divider(),
+
+                    pw.Table(
+                      columnWidths: title == 'PURCHASE REQUEST'
+                          ? getPurchaseRequestColumnWidths()
+                          : title == 'PURCHASE ORDER'
+                              ? getPurchaseOrderColumnWidths()
+                              : getSalesOrderColumnWidths(),
+                      children: [
+                        // Table headers
+                        pw.TableRow(
+                          children: lines
+                              .map((line) => pw.Padding(
+                                    padding: const pw.EdgeInsets.only(left: 5),
+                                    child: pw.Text(line['name']),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                    pw.Divider(),
+
+                    ...dataMap.map((row) {
+                      return pw.Table(
+                        columnWidths: title == 'PURCHASE REQUEST'
+                            ? getPurchaseRequestColumnWidths()
+                            : title == 'PURCHASE ORDER'
+                                ? getPurchaseOrderColumnWidths()
+                                : getSalesOrderColumnWidths(),
+                        children: [
+                          pw.TableRow(
+                            children: lines
+                                .map((line) => pw.Padding(
+                                      padding:
+                                          const pw.EdgeInsets.only(left: 5),
+                                      child:
+                                          pw.Text(row[line['code']].toString()),
+                                    ))
+                                .toList(),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+
+                    pw.SizedBox(height: 20),
+                    pw.Center(
+                      child: pw.Text(
+                        ('*** NOTHING FOLLOWS ***'),
+                        style: const pw.TextStyle(
+                          fontSize: 15.0,
+                        ),
+                      ),
+                    ),
+
+                    pw.SizedBox(height: 5),
+                    pw.Divider(),
+
+                    if (title == "PURCHASE ORDER" ||
+                        title == "SALES ORDER") ...[
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
                         children: [
                           pw.SizedBox(
                             width: 100,
-                            child: pw.Text('${entry.key}:'),
+                            child: pw.Text(
+                              'Total Amount:',
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
                           ),
                           pw.Text(
-                            ' ${entry.value}',
+                            (dataMap.fold<num>(
+                                    0,
+                                    (previousValue, element) =>
+                                        previousValue +
+                                        (element['subtotal'] as num? ?? 0)))
+                                .toStringAsFixed(2),
                             style: pw.TextStyle(
                               fontWeight: pw.FontWeight.bold,
                             ),
                           ),
                         ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-                pw.Expanded(
-                  child: pw.Padding(
-                    padding: const pw.EdgeInsets.only(left: 70.0),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: rightHeader.entries.map((entry) {
-                        return pw.Row(
-                          children: [
-                            pw.SizedBox(
-                              width: 100,
-                              child: pw.Text('${entry.key}:'),
+                      ),
+                    ],
+                    pw.SizedBox(height: 15),
+
+                    pw.Row(
+                      children: footer.map((footerItem) {
+                        return pw.Expanded(
+                          child: pw.Padding(
+                            padding:
+                                const pw.EdgeInsets.symmetric(horizontal: 5),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(footerItem),
+                                pw.SizedBox(height: 20),
+                                pw.Divider(
+                                  color: PdfColor.fromHex('000000'),
+                                  thickness: 0.5,
+                                ),
+                              ],
                             ),
-                            pw.Text(
-                              ' ${entry.value}',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                          ),
                         );
                       }).toList(),
-                    ),
-                  ),
+                    )
+                  ],
                 ),
-              ],
-            ),
-            pw.SizedBox(height: 20),
-            pw.Divider(),
-
-            pw.Table(
-              columnWidths: title == 'PURCHASE REQUEST'
-                  ? getPurchaseRequestColumnWidths()
-                  : title == 'PURCHASE ORDER'
-                      ? getPurchaseOrderColumnWidths()
-                      : getSalesOrderColumnWidths(),
-              children: [
-                // Table headers
-                pw.TableRow(
-                  children: lines
-                      .map((line) => pw.Padding(
-                            padding: const pw.EdgeInsets.only(left: 5),
-                            child: pw.Text(line['name']),
-                          ))
-                      .toList(),
-                ),
-              ],
-            ),
-            pw.Divider(),
-
-            pw.Table(
-              columnWidths: title == 'PURCHASE REQUEST'
-                  ? getPurchaseRequestColumnWidths()
-                  : title == 'PURCHASE ORDER'
-                      ? getPurchaseOrderColumnWidths()
-                      : getSalesOrderColumnWidths(),
-              children: [
-                // Table rows
-                ...dataMap.map((row) {
-                  return pw.TableRow(
-                    children: lines
-                        .map((line) => pw.Padding(
-                              padding: const pw.EdgeInsets.only(left: 5),
-                              child: pw.Text(row[line['code']].toString()),
-                            ))
-                        .toList(),
-                  );
-                }).toList(),
-              ],
-            ),
-
-            pw.Spacer(),
-
-            pw.Center(
-              child: pw.Text(
-                ('*** NOTHING FOLLOWS ***'),
-                style: const pw.TextStyle(
-                  fontSize: 15.0,
-                ),
-              ),
-            ),
-
-            pw.SizedBox(height: 5),
-            pw.Divider(),
-
-            if (title == "PURCHASE ORDER" || title == "SALES ORDER") ...[
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.SizedBox(
-                    width: 100,
-                    child: pw.Text(
-                      'Total Amount:',
-                      style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  pw.Text(
-                    (dataMap.fold<num>(
-                            0,
-                            (previousValue, element) =>
-                                previousValue +
-                                (element['subtotal'] as num? ?? 0)))
-                        .toStringAsFixed(2),
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            pw.SizedBox(height: 15),
-
-            pw.Row(
-              children: footer.map((footerItem) {
-                return pw.Expanded(
-                  child: pw.Padding(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 5),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(footerItem),
-                        pw.SizedBox(height: 20),
-                        pw.Divider(
-                          color: PdfColor.fromHex('000000'),
-                          thickness: 0.5,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            )
-          ],
-        ),
-      ),
+              ]),
     );
 
     if (kIsWeb) {
@@ -296,5 +299,6 @@ Future<void> generatePdf({
     }
   } catch (e) {
     showToastMessage('Error generating PDF: $e');
+    print('Error generating PDF: $e');
   }
 }
