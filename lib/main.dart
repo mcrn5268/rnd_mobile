@@ -23,42 +23,42 @@ import 'package:flutter/foundation.dart';
 import 'package:rnd_mobile/firebase/firestore.dart';
 
 //--------------------WEB------------------------------
-// import 'dart:html' as web;
+import 'dart:html' as web;
 
 //--------------------DESKTOP--------------------------
 // import 'package:local_notifier/local_notifier.dart';
 // import 'package:window_size/window_size.dart';
 
 //--------------------DESKTOP & WEB--------------------
-// import 'package:rnd_mobile/screens/web/web_home.dart';
+import 'package:rnd_mobile/screens/web/web_home.dart';
 
 //--------------------MOBILE---------------------------
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:rnd_mobile/firebase_options.dart';
-import 'package:rnd_mobile/widgets/toast.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:audioplayers/audioplayers.dart';
+// import 'package:rnd_mobile/firebase_options.dart';
+// import 'package:rnd_mobile/widgets/toast.dart';
 
 //--------------------WEB & MOBILE--------------------
 import 'package:rnd_mobile/screens/mobile/mobile_home.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  //while app is in the background
-  String type = message.data['type'];
+// @pragma('vm:entry-point')
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   //while app is in the background
+//   String type = message.data['type'];
 
-  SharedPreferencesService().setRequest(
-      type: type,
-      requestNumber: type == 'PR'
-          ? int.parse(message.data['preqNum'])
-          : int.parse(message.data['poNum']));
-  // AudioCache().play('audio/notif_sound2.mp3');
-  // print('_firebaseMessagingBackgroundHandler!!!!!!!!!');
-  // SharedPreferencesService().getRequest().then((value) {
-  //   showToast('SharedPreferencesService111: $value');
-  // });
-  // showToast('END OF _firebaseMessagingBackgroundHandler');
-}
+//   SharedPreferencesService().setRequest(
+//       type: type,
+//       requestNumber: type == 'PR'
+//           ? int.parse(message.data['preqNum'])
+//           : int.parse(message.data['poNum']));
+//   // AudioCache().play('audio/notif_sound2.mp3');
+//   // print('_firebaseMessagingBackgroundHandler!!!!!!!!!');
+//   // SharedPreferencesService().getRequest().then((value) {
+//   //   showToast('SharedPreferencesService111: $value');
+//   // });
+//   // showToast('END OF _firebaseMessagingBackgroundHandler');
+// }
 
 void main() async {
   //OTHER MOBILES NEED THIS
@@ -67,39 +67,39 @@ void main() async {
   String? token;
 
   //--------------------WEB---------------------
-  // if (kIsWeb) {
-  //   await Firebase.initializeApp(
-  //     options: const FirebaseOptions(
-  //       apiKey: "AIzaSyAqX9tCKb9Ce2rb5d_rShSNEjDjXoIADSc",
-  //       authDomain: "prime-software-62e3a.firebaseapp.com",
-  //       projectId: "prime-software-62e3a",
-  //       storageBucket: "prime-software-62e3a.appspot.com",
-  //       messagingSenderId: "431428997513",
-  //       appId: "1:431428997513:web:beb46636c4b5b39bf59158",
-  //     ),
-  //   );
-  //   if (web.Notification.permission != 'granted') {
-  //     web.Notification.requestPermission();
-  //   }
-  // }
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyAqX9tCKb9Ce2rb5d_rShSNEjDjXoIADSc",
+        authDomain: "prime-software-62e3a.firebaseapp.com",
+        projectId: "prime-software-62e3a",
+        storageBucket: "prime-software-62e3a.appspot.com",
+        messagingSenderId: "431428997513",
+        appId: "1:431428997513:web:beb46636c4b5b39bf59158",
+      ),
+    );
+    if (web.Notification.permission != 'granted') {
+      web.Notification.requestPermission();
+    }
+  }
 
   //--------------------MOBILE---------------------
 
-  if (Platform.isAndroid || Platform.isIOS) {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
+  // if (Platform.isAndroid || Platform.isIOS) {
+  //   await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
 
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
+  //   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  //   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    if (!await SharedPreferencesService().tokenExists()) {
-      token = await messaging.getToken(
-          vapidKey:
-              'BHMhBBrV_WTKZwItCmH1IJ9vo1i3ZKNBZ-FrviLLdFinU1dRaLQJNspQz_2zZSv-Nbp7iC5fqYExa4MGT4P87hQ');
-      print('Device token: $token');
-    }
+  //   if (!await SharedPreferencesService().tokenExists()) {
+  //     token = await messaging.getToken(
+  //         vapidKey:
+  //             'BHMhBBrV_WTKZwItCmH1IJ9vo1i3ZKNBZ-FrviLLdFinU1dRaLQJNspQz_2zZSv-Nbp7iC5fqYExa4MGT4P87hQ');
+  //     print('Device token: $token');
+  //   }
 
-    final NotificationSettings settings = await messaging.requestPermission();
-  }
+  //   final NotificationSettings settings = await messaging.requestPermission();
+  // }
 
   //--------------------DESKTOP------------- --------
 
@@ -296,14 +296,14 @@ class MyApp extends StatelessWidget {
                           }
                         }
                         //web
-                        // if (MediaQuery.of(context).size.width < 600) {
-                        //   return const MobileHome();
-                        // } else {
-                        //   return const WebHome();
-                        // }
+                        if (MediaQuery.of(context).size.width < 600) {
+                          return const MobileHome();
+                        } else {
+                          return const WebHome();
+                        }
 
                         //mobile
-                        return const MobileHome();
+                        // return const MobileHome();
 
                         //desktop
                         // return const WebHome();
