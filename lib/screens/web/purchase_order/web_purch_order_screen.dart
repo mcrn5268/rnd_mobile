@@ -93,6 +93,10 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
             purchaseOrders.retainWhere(
                 (order) => order.remarks.trim() == otherValue.trim());
             break;
+          case 'Last User':
+            purchaseOrders.retainWhere(
+                (order) => order.userName.trim() == otherValue.trim());
+            break;
           case 'Purpose':
             purchaseOrders.retainWhere(
                 (order) => order.purpose.trim() == otherValue.trim());
@@ -293,16 +297,20 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
                               text: 'Reference',
                             ),
                             const WebReusableRow(
-                              flex: 3,
+                              flex: 2,
                               text: 'Warehouse',
                             ),
                             const WebReusableRow(
-                              flex: 3,
+                              flex: 2,
                               text: 'Purpose',
                             ),
                             const WebReusableRow(
-                              flex: 3,
+                              flex: 2,
                               text: 'Remarks',
+                            ),
+                            const WebReusableRow(
+                              flex: 2,
+                              text: 'Last User',
                             ),
                             Expanded(
                                 flex: 4,
@@ -498,18 +506,22 @@ class _WebPurchOrderScreenState extends State<WebPurchOrderScreen> {
                                                         order.reference.trim(),
                                                   ),
                                                   WebReusableRow(
-                                                    flex: 3,
+                                                    flex: 2,
                                                     text: order
                                                         .warehouseDescription
                                                         .trim(),
                                                   ),
                                                   WebReusableRow(
-                                                    flex: 3,
+                                                    flex: 2,
                                                     text: order.purpose.trim(),
                                                   ),
                                                   WebReusableRow(
-                                                    flex: 3,
+                                                    flex: 2,
                                                     text: order.remarks.trim(),
+                                                  ),
+                                                  WebReusableRow(
+                                                    flex: 2,
+                                                    text: order.userName.trim(),
                                                   ),
                                                   Expanded(
                                                     flex: 4,

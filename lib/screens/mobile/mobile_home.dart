@@ -40,7 +40,6 @@ import 'package:universal_io/io.dart';
 
 //ONLY ENABLE THIS PACKAGE FOR WEB
 import 'dart:js' as js;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 
 //ONLY ENABLE THIS PACKAGE FOR MOBILE

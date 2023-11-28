@@ -44,7 +44,7 @@ dependencies:
   #     ref:  3362fbe84cde30bd68875f1e04c214c72b054fd9
   intl: ^0.18.1
   flutter_staggered_animations: ^1.1.1
-  firebase_messaging: ^14.6.1
+  # firebase_messaging: ^14.6.1
   firebase_core: ^2.15.0
   #for desktop
   #firebase_core:

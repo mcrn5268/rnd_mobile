@@ -91,6 +91,10 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
             purchaseOrders.retainWhere(
                 (order) => order.remarks.trim() == otherValue.trim());
             break;
+          case 'Last User':
+            purchaseOrders.retainWhere(
+                (order) => order.userName.trim() == otherValue.trim());
+            break;
           case 'Purpose':
             purchaseOrders.retainWhere(
                 (order) => order.purpose.trim() == otherValue.trim());
@@ -634,6 +638,7 @@ class _MobilePurchOrderScreenState extends State<MobilePurchOrderScreen> {
                                 'Supplier',
                                 'Address',
                                 'Remarks',
+                                'Last User',
                                 'Purpose',
                                 'Terms of Payment',
                               ].map<DropdownMenuItem<String>>((String value) {

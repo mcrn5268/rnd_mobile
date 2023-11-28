@@ -695,7 +695,6 @@ class _WebHomeState extends State<WebHome> with AutomaticKeepAliveClientMixin {
                     bool purchReqFlag = handleSessionExpiredException(
                         snapshot.data![0], context);
                     if (!purchReqFlag) {
-                      print('snapshot.data: ${snapshot.data}');
                       final List<PurchaseRequest> data =
                           snapshot.data![0]['purchaseRequests'];
                       if (purchReqProvider.purchaseRequestList.isEmpty) {

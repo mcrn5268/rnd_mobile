@@ -273,7 +273,7 @@ class MyApp extends StatelessWidget {
                                   documentId: userProvider.user!.username,
                                   data: {'nonMobile': true});
                             } else {
-                              //desktop uses firedart
+                              // //desktop uses firedart
                               Firestore.instance
                                   .collection("tokens")
                                   .document(userProvider.user!.username)
