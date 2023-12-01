@@ -1,4 +1,4 @@
- import 'package:oktoast/oktoast.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:rnd_mobile/providers/notifications_provider.dart';
 import 'package:rnd_mobile/providers/purchase_order/purch_order_filter_provider.dart';
 import 'package:rnd_mobile/providers/purchase_request/purch_req_hist_filter_provider.dart';
@@ -78,9 +78,9 @@ void main() async {
         appId: "1:431428997513:web:beb46636c4b5b39bf59158",
       ),
     );
-    if (web.Notification.permission != 'granted') {
-      web.Notification.requestPermission();
-    }
+    // if (web.Notification.permission != 'granted') {
+    //   web.Notification.requestPermission();
+    // }
   }
 
   //--------------------MOBILE---------------------
@@ -256,7 +256,6 @@ class MyApp extends StatelessWidget {
                             username: data['username']!,
                             sessionId: data['sessionId']!);
                         userProvider.setUser(user, notify: false);
-
                       }
                       if (userProvider.user == null) {
                         // User is not logged in
@@ -300,6 +299,7 @@ class MyApp extends StatelessWidget {
                           return const MobileHome();
                         } else {
                           return const WebHome();
+                          // return Scaffold(body: Center(child: Text('HERE'),),);
                         }
 
                         //mobile

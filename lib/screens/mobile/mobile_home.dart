@@ -315,6 +315,7 @@ class _MobileHomeState extends State<MobileHome>
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: AppBar(
+            iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               Consumer<NotificationProvider>(
                 builder: (context, consumerNotifProvider, child) {
@@ -505,7 +506,10 @@ class _MobileHomeState extends State<MobileHome>
             title: ValueListenableBuilder<String>(
                 valueListenable: titleNotifier,
                 builder: (context, value, _) {
-                  return Text(value);
+                  return Text(
+                    value,
+                    style: const TextStyle(color: Colors.white),
+                  );
                 }),
             // flexibleSpace: Container(
             //   decoration: const BoxDecoration(
