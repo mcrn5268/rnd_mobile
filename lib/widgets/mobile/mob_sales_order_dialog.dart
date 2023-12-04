@@ -292,36 +292,72 @@ Future<void> salesOrderShowDialog(
           children: [
             const Divider(),
             // Generate PDF
-            ElevatedButton(
-                onPressed: () async {
-                  await generatePdf(
-                      context: context,
-                      title: 'SALES ORDER',
-                      leftHeader: {
-                        'Customer': order.debtorName,
-                        'Terms': order.topDescription,
-                      },
-                      rightHeader: {
-                        'Date': soDate,
-                        'Delivery Date': deliveryDate
-                      },
-                      lines: [
-                        {'name': 'Line', 'code': 'ln_num'},
-                        {'name': 'Item Description', 'code': 'item_desc'},
-                        {'name': 'Order Qty', 'code': 'qty'},
-                        {'name': 'Unit', 'code': 'so_unit'},
-                        {'name': 'Price', 'code': 'selling_price'},
-                        {'name': 'Subtotal', 'code': 'subtotal'}
-                      ],
-                      dataMap: dataMap,
-                      footer: [
-                        'Prepared By',
-                        'Noted By',
-                        'Approved By',
-                        'Received By'
-                      ]);
-                },
-                child: const Text('Generate PDF')),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                    onPressed: () async {
+                      await generatePdf(
+                          context: context,
+                          title: 'SALES ORDER',
+                          leftHeader: {
+                            'Customer': order.debtorName,
+                            'Terms': order.topDescription,
+                          },
+                          rightHeader: {
+                            'Date': soDate,
+                            'Delivery Date': deliveryDate
+                          },
+                          lines: [
+                            {'name': 'Line', 'code': 'ln_num'},
+                            {'name': 'Item Description', 'code': 'item_desc'},
+                            {'name': 'Order Qty', 'code': 'qty'},
+                            {'name': 'Unit', 'code': 'so_unit'},
+                            {'name': 'Price', 'code': 'selling_price'},
+                            {'name': 'Subtotal', 'code': 'subtotal'}
+                          ],
+                          dataMap: dataMap,
+                          footer: [
+                            'Prepared By',
+                            'Noted By',
+                            'Approved By',
+                            'Received By'
+                          ]);
+                    },
+                    child: const Text('Generate Full Size PDF')),
+                ElevatedButton(
+                    onPressed: () async {
+                      await generatePdf(
+                          context: context,
+                          title: 'SALES ORDER',
+                          leftHeader: {
+                            'Customer': order.debtorName,
+                            'Terms': order.topDescription,
+                          },
+                          rightHeader: {
+                            'Date': soDate,
+                            'Delivery Date': deliveryDate
+                          },
+                          lines: [
+                            {'name': 'Line', 'code': 'ln_num'},
+                            {'name': 'Item Description', 'code': 'item_desc'},
+                            {'name': 'Order Qty', 'code': 'qty'},
+                            {'name': 'Unit', 'code': 'so_unit'},
+                            {'name': 'Price', 'code': 'selling_price'},
+                            {'name': 'Subtotal', 'code': 'subtotal'}
+                          ],
+                          dataMap: dataMap,
+                          footer: [
+                            'Prepared By',
+                            'Noted By',
+                            'Approved By',
+                            'Received By'
+                          ],
+                          small: true);
+                    },
+                    child: const Text('Generate Small Size PDF')),
+              ],
+            ),
           ],
         ),
       ]);
